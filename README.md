@@ -1,5 +1,8 @@
 # Macroeconometrics.jl
 
+[![](https://img.shields.io/badge/docs-latest-blue.svg)](https://chung9207.github.io/Macroeconometrics.jl/dev/)
+[![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
+
 A Julia package for macroeconomic time series analysis.
 
 ## Features
