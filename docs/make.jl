@@ -5,12 +5,12 @@ DocMeta.setdocmeta!(Macroeconometrics, :DocTestSetup, :(using Macroeconometrics)
 
 makedocs(;
     modules=[Macroeconometrics],
-    authors="User",
-    remotes=nothing,
+    authors="Wookyung Chung <mirimtl@protonmail.com>",
+    repo="https://github.com/chung9207/Macroeconometrics.jl/blob/{commit}{path}#{line}",
     sitename="Macroeconometrics.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://user.github.io/Macroeconometrics.jl",
+        canonical="https://chung9207.github.io/Macroeconometrics.jl",
         edit_link="main",
         assets=String[],
         mathengine=Documenter.MathJax3(),
@@ -27,4 +27,9 @@ makedocs(;
     ],
     checkdocs=:exports,
     warnonly=[:missing_docs, :cross_references, :autodocs_block, :docs_block],
+)
+
+deploydocs(;
+    repo="github.com/chung9207/Macroeconometrics.jl",
+    devbranch="main",
 )
