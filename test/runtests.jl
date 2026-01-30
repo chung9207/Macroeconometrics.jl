@@ -1,6 +1,10 @@
 using Test
 
 @testset "Macroeconometrics Package Tests" begin
+    @testset "Aqua" begin
+        include("test_aqua.jl")
+    end
+
     @testset "Core VAR" begin
         include("test_core_var.jl")
     end
