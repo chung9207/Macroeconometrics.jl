@@ -555,59 +555,6 @@ estimate_lp(Y::AbstractMatrix, shock_var::Int, horizon::Int; kwargs...) =
     estimate_lp(Float64.(Y), shock_var, horizon; kwargs...)
 
 # =============================================================================
-# IRF Extraction
-# =============================================================================
-
-"""
-    lp_irf(model::LPModel{T}; conf_level::Real=0.95) -> LPImpulseResponse{T}
-
-Extract impulse response function with confidence intervals from LP model.
-"""
-function lp_irf(model::LPModel{T}; conf_level::Real=0.95) where {T<:AbstractFloat}
-    irf_data = extract_shock_irf(model.B, model.vcov, model.response_vars, 2;
-                                  conf_level=conf_level)
-
-    response_names = default_var_names(length(model.response_vars); prefix="Var")
-    shock_name = "Shock $(model.shock_var)"
-    cov_type_sym = model.cov_estimator isa NeweyWestEstimator ? :newey_west : :white
-
-    LPImpulseResponse{T}(irf_data.values, irf_data.ci_lower, irf_data.ci_upper,
-                         irf_data.se, model.horizon, response_names, shock_name,
-                         cov_type_sym, T(conf_level))
-end
-
-"""
-    lp_irf(Y::AbstractMatrix, shock_var::Int, horizon::Int; kwargs...) -> LPImpulseResponse
-
-Convenience function: estimate LP and extract IRF in one call.
-"""
-function lp_irf(Y::AbstractMatrix, shock_var::Int, horizon::Int; conf_level::Real=0.95, kwargs...)
-    model = estimate_lp(Y, shock_var, horizon; kwargs...)
-    lp_irf(model; conf_level=conf_level)
-end
-
-# =============================================================================
-# Cumulative IRF
-# =============================================================================
-
-"""
-    cumulative_irf(irf::LPImpulseResponse{T}) -> LPImpulseResponse{T}
-
-Compute cumulative impulse response: Σₛ₌₀ʰ β_s.
-"""
-function cumulative_irf(irf::LPImpulseResponse{T}) where {T<:AbstractFloat}
-    cum_values = cumsum(irf.values, dims=1)
-    cum_se = sqrt.(cumsum(irf.se.^2, dims=1))
-
-    z = T(quantile(Normal(), 1 - (1 - irf.conf_level) / 2))
-    cum_ci_lower = cum_values .- z .* cum_se
-    cum_ci_upper = cum_values .+ z .* cum_se
-
-    LPImpulseResponse{T}(cum_values, cum_ci_lower, cum_ci_upper, cum_se, irf.horizon,
-                         irf.response_vars, irf.shock_var, irf.cov_type, irf.conf_level)
-end
-
-# =============================================================================
 # Multiple Shocks
 # =============================================================================
 

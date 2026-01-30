@@ -302,11 +302,11 @@ fm = estimate_factors(X, r)
 F = fm.factors
 
 # Combine with key observables (e.g., FFR, GDP, inflation)
-Y_key = data[:, [:FFR, :GDP, :CPI]]
+Y_key = Matrix(data[:, [:FFR, :GDP, :CPI]])
 Y_favar = hcat(Y_key, F)
 
 # Estimate FAVAR
-favar_model = fit(VARModel, Y_favar, p)
+favar_model = estimate_var(Y_favar, p)
 
 # Structural analysis
 irf_favar = irf(favar_model, H; method=:cholesky)
@@ -367,6 +367,283 @@ Estimated via EM algorithm. More efficient than PCA if model is correctly specif
 
 ---
 
+## Dynamic Factor Models
+
+### Model Specification
+
+The dynamic factor model extends the static model by allowing factors to follow a VAR process:
+
+**Observation Equation**:
+```math
+X_t = \Lambda F_t + e_t
+```
+
+**State Equation (Factor Dynamics)**:
+```math
+F_t = A_1 F_{t-1} + A_2 F_{t-2} + \cdots + A_p F_{t-p} + \eta_t
+```
+
+where:
+- ``F_t`` is the ``r \times 1`` vector of latent factors
+- ``\Lambda`` is the ``N \times r`` loading matrix
+- ``A_1, \ldots, A_p`` are ``r \times r`` autoregressive coefficient matrices
+- ``\eta_t \sim N(0, \Sigma_\eta)`` are factor innovations
+- ``e_t \sim N(0, \Sigma_e)`` are idiosyncratic errors (typically diagonal)
+
+### Estimation Methods
+
+**Two-Step Estimation**:
+1. Extract factors using PCA (as in static model)
+2. Estimate VAR(p) on extracted factors
+
+**EM Algorithm**:
+- Iterates between E-step (Kalman smoother) and M-step (parameter updates)
+- More efficient but computationally intensive
+
+### Julia Implementation
+
+```julia
+using Macroeconometrics
+
+# Estimate dynamic factor model with r factors and p lags
+model = estimate_dynamic_factors(X, r, p;
+    method = :twostep,      # or :em
+    standardize = true,
+    diagonal_idio = true    # Diagonal idiosyncratic covariance
+)
+
+# Access results
+F = model.factors           # T×r estimated factors
+Λ = model.loadings          # N×r loadings
+A = model.A                 # Vector of r×r AR coefficient matrices
+Σ_η = model.Sigma_eta       # r×r factor innovation covariance
+Σ_e = model.Sigma_e         # N×N idiosyncratic covariance
+```
+
+### Model Selection for DFM
+
+Select the number of factors ``r`` and lag order ``p`` using information criteria:
+
+```julia
+# Grid search over (r, p) combinations
+ic = ic_criteria_dynamic(X, max_r, max_p;
+    method = :twostep,
+    standardize = true
+)
+
+println("AIC selects: r=$(ic.r_AIC), p=$(ic.p_AIC)")
+println("BIC selects: r=$(ic.r_BIC), p=$(ic.p_BIC)")
+
+# View full IC matrices
+ic.AIC  # r×p matrix of AIC values
+ic.BIC  # r×p matrix of BIC values
+```
+
+### Forecasting with DFM
+
+```julia
+# Point forecasts h steps ahead
+fc = forecast(model, h)
+fc.factors      # h×r factor forecasts
+fc.observables  # h×N observable forecasts
+
+# Forecasts with confidence intervals
+fc = forecast(model, h;
+    ci_level = 0.90,
+    n_sim = 1000
+)
+fc.factors_lower, fc.factors_upper      # Factor CIs
+fc.observables_lower, fc.observables_upper  # Observable CIs
+```
+
+### Stationarity Check
+
+```julia
+# Check if factor dynamics are stationary
+is_stationary(model)  # true if max|eigenvalue| < 1
+
+# Get companion matrix for factor VAR
+C = companion_matrix_factors(model)
+eigvals(C)  # Eigenvalues determine stability
+```
+
+**Reference**: Stock & Watson (2002a), Doz, Giannone & Reichlin (2011)
+
+---
+
+## Generalized Dynamic Factor Model (GDFM)
+
+### Theoretical Foundation
+
+The Generalized Dynamic Factor Model of Forni, Hallin, Lippi & Reichlin (2000, 2005) provides a fully dynamic approach to factor analysis using spectral methods. Unlike the standard DFM which uses static PCA followed by VAR, the GDFM extracts factors directly in the frequency domain.
+
+### Model Specification
+
+The GDFM decomposes each observable as:
+
+```math
+x_{it} = \chi_{it} + \xi_{it}
+```
+
+where:
+- ``\chi_{it}`` is the **common component** driven by ``q`` common shocks
+- ``\xi_{it}`` is the **idiosyncratic component**
+
+The common component has the representation:
+
+```math
+\chi_{it} = b_{i1}(L) u_{1t} + b_{i2}(L) u_{2t} + \cdots + b_{iq}(L) u_{qt}
+```
+
+where ``b_{ij}(L)`` are square-summable filters and ``u_{jt}`` are orthonormal white noise shocks.
+
+### Spectral Representation
+
+In the frequency domain, the spectral density of ``X_t`` decomposes as:
+
+```math
+\Sigma_X(\omega) = \Sigma_\chi(\omega) + \Sigma_\xi(\omega)
+```
+
+The key insight is that common factors produce **diverging eigenvalues** (growing with ``N``) while idiosyncratic components produce **bounded eigenvalues**.
+
+### Estimation Algorithm
+
+1. **Spectral Density Estimation**: Estimate ``\hat{\Sigma}_X(\omega)`` using kernel smoothing of the periodogram
+2. **Dynamic Eigenanalysis**: Compute eigenvalue decomposition at each frequency
+3. **Factor Extraction**: Select top ``q`` eigenvectors (dynamic principal components)
+4. **Common Component**: Reconstruct ``\chi_t`` via inverse Fourier transform
+
+### Julia Implementation
+
+```julia
+using Macroeconometrics
+
+# Estimate GDFM with q dynamic factors
+model = estimate_gdfm(X, q;
+    standardize = true,
+    bandwidth = 0,           # Auto-select: T^(1/3)
+    kernel = :bartlett,      # :bartlett, :parzen, or :tukey
+    r = 0                    # Static factors (0 = same as q)
+)
+
+# Access results
+F = model.factors                 # T×q time-domain factors
+χ = model.common_component        # T×N common component
+ξ = model.idiosyncratic           # T×N idiosyncratic component
+Λ = model.loadings_spectral       # N×q×n_freq frequency-domain loadings
+
+# Variance explained by dynamic factors
+model.variance_explained          # q-vector of variance shares
+```
+
+### Selecting the Number of Dynamic Factors
+
+The GDFM uses eigenvalue-based criteria rather than information criteria:
+
+```julia
+# Compute selection criteria
+ic = ic_criteria_gdfm(X, max_q;
+    standardize = true,
+    bandwidth = 0,
+    kernel = :bartlett
+)
+
+# Eigenvalue ratio criterion (Ahn & Horenstein 2013)
+println("Ratio criterion selects: q=$(ic.q_ratio)")
+
+# Variance threshold criterion (90% of spectral variance)
+println("Variance criterion selects: q=$(ic.q_variance)")
+
+# Diagnostic data
+ic.eigenvalue_ratios      # λ_i / λ_{i+1} ratios
+ic.cumulative_variance    # Cumulative variance explained
+ic.avg_eigenvalues        # Average eigenvalues across frequencies
+```
+
+### Spectral Diagnostics
+
+```julia
+# Get data for eigenvalue plots across frequencies
+plot_data = spectral_eigenvalue_plot_data(model)
+plot_data.frequencies     # Vector of frequencies (0 to π)
+plot_data.eigenvalues     # N×n_freq matrix of eigenvalues
+
+# First eigenvalue should dominate if one strong factor
+# Gap between q-th and (q+1)-th eigenvalue indicates factor count
+```
+
+### Common Variance Share
+
+```julia
+# Fraction of variance explained by common component for each variable
+shares = common_variance_share(model)
+
+# Variables well-explained by common factors
+well_explained = findall(shares .> 0.5)
+
+# Summary statistics
+println("Mean common variance share: ", round(mean(shares), digits=3))
+println("Variables with >50% common: ", length(well_explained))
+```
+
+### Forecasting with GDFM
+
+```julia
+# Forecast h steps ahead
+fc = forecast(model, h; method=:ar)
+
+fc.common   # h×N common component forecast
+fc.factors  # h×q factor forecast
+```
+
+### Comparison: DFM vs GDFM
+
+| Aspect | Dynamic Factor Model | Generalized DFM |
+|--------|---------------------|-----------------|
+| **Approach** | Time domain (PCA + VAR) | Frequency domain (spectral) |
+| **Factor dynamics** | Explicit VAR structure | Implicit through spectral density |
+| **Estimation** | Two-step or EM | Kernel-smoothed periodogram |
+| **Computational cost** | Moderate | Higher (FFT at each frequency) |
+| **Asymptotics** | ``T \to \infty`` | ``N, T \to \infty`` jointly |
+| **Best for** | Moderate N, focus on forecasting | Large N, structural decomposition |
+
+### Example: Complete GDFM Workflow
+
+```julia
+using Macroeconometrics
+
+# Load large macroeconomic panel (e.g., FRED-MD)
+X = load_data()  # T×N matrix
+
+# Step 1: Select number of factors
+ic = ic_criteria_gdfm(X, 10)
+q = ic.q_ratio
+println("Selected q = $q dynamic factors")
+
+# Step 2: Estimate GDFM
+model = estimate_gdfm(X, q; kernel=:parzen)
+
+# Step 3: Diagnostics
+println("Variance explained: ", round.(model.variance_explained, digits=3))
+println("Mean R²: ", round(mean(r2(model)), digits=3))
+
+# Step 4: Extract common component for further analysis
+χ = model.common_component  # Use in FAVAR, forecasting, etc.
+
+# Step 5: Identify variables driven by common vs idiosyncratic shocks
+shares = common_variance_share(model)
+common_driven = findall(shares .> 0.7)
+idio_driven = findall(shares .< 0.3)
+```
+
+**References**:
+- Forni, M., Hallin, M., Lippi, M., & Reichlin, L. (2000). "The Generalized Dynamic-Factor Model: Identification and Estimation."
+- Forni, M., Hallin, M., Lippi, M., & Reichlin, L. (2005). "The Generalized Dynamic Factor Model: One-Sided Estimation and Forecasting."
+- Hallin, M., & Liška, R. (2007). "Determining the Number of Factors in the General Dynamic Factor Model."
+
+---
+
 ## References
 
 ### Core Theory
@@ -377,8 +654,15 @@ Estimated via EM algorithm. More efficient than PCA if model is correctly specif
 - Stock, J. H., & Watson, M. W. (2002a). "Forecasting Using Principal Components from a Large Number of Predictors." *Journal of the American Statistical Association*, 97(460), 1167-1179.
 - Stock, J. H., & Watson, M. W. (2002b). "Macroeconomic Forecasting Using Diffusion Indexes." *Journal of Business & Economic Statistics*, 20(2), 147-162.
 
+### Dynamic Factor Models
+
+- Doz, C., Giannone, D., & Reichlin, L. (2011). "A Two-Step Estimator for Large Approximate Dynamic Factor Models Based on Kalman Filtering." *Journal of Econometrics*, 164(1), 188-205.
+- Doz, C., Giannone, D., & Reichlin, L. (2012). "A Quasi-Maximum Likelihood Approach for Large, Approximate Dynamic Factor Models." *Review of Economics and Statistics*, 94(4), 1014-1024.
+- Forni, M., Hallin, M., Lippi, M., & Reichlin, L. (2000). "The Generalized Dynamic-Factor Model: Identification and Estimation." *Review of Economics and Statistics*, 82(4), 540-554.
+- Forni, M., Hallin, M., Lippi, M., & Reichlin, L. (2005). "The Generalized Dynamic Factor Model: One-Sided Estimation and Forecasting." *Journal of the American Statistical Association*, 100(471), 830-840.
+- Hallin, M., & Liška, R. (2007). "Determining the Number of Factors in the General Dynamic Factor Model." *Journal of the American Statistical Association*, 102(478), 603-617.
+
 ### Applications
 
 - Bernanke, B. S., Boivin, J., & Eliasz, P. (2005). "Measuring the Effects of Monetary Policy: A Factor-Augmented Vector Autoregressive (FAVAR) Approach." *Quarterly Journal of Economics*, 120(1), 387-422.
-- Forni, M., Hallin, M., Lippi, M., & Reichlin, L. (2000). "The Generalized Dynamic-Factor Model: Identification and Estimation." *Review of Economics and Statistics*, 82(4), 540-554.
 - McCracken, M. W., & Ng, S. (2016). "FRED-MD: A Monthly Database for Macroeconomic Research." *Journal of Business & Economic Statistics*, 34(4), 574-589.

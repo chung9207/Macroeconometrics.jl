@@ -77,8 +77,6 @@ include("bayesian.jl")
 
 # Structural analysis
 include("identification.jl")
-include("irf.jl")
-include("fevd.jl")
 
 # Factor models (static, dynamic, generalized dynamic)
 include("factormodels.jl")
@@ -90,6 +88,10 @@ include("gmm.jl")
 include("lp_types.jl")      # LP type definitions
 include("lp_core.jl")       # Covariance estimators + core LP + shared utilities
 include("lp_extensions.jl") # LP-IV, Smooth LP, State LP, Propensity LP
+
+# IRF and FEVD (after LP types for lp_irf support)
+include("irf.jl")
+include("fevd.jl")
 
 # =============================================================================
 # Exports - Types
