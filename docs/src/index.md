@@ -188,7 +188,7 @@ This package is released under the MIT License.
 
 ## Contributing
 
-Contributions are welcome! Please see the [GitHub repository](https://github.com/your-username/Macroeconometrics.jl) for contribution guidelines.
+Contributions are welcome! Please see the [GitHub repository](https://github.com/chung9207/Macroeconometrics.jl) for contribution guidelines.
 
 ## Contents
 
