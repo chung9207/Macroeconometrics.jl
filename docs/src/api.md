@@ -153,51 +153,27 @@ Order   = [:function]
 
 ## Local Projections
 
-### Core LP Estimation
+### LP Types
 
 ```@autodocs
 Modules = [MacroEconometricModels]
-Pages   = ["lp_estimation.jl"]
+Pages   = ["lp_types.jl"]
+Order   = [:type]
+```
+
+### Core LP Estimation and Covariance
+
+```@autodocs
+Modules = [MacroEconometricModels]
+Pages   = ["lp_core.jl"]
 Order   = [:function]
 ```
 
-### Covariance Estimation
+### LP Extensions (IV, Smooth, State-Dependent, Propensity)
 
 ```@autodocs
 Modules = [MacroEconometricModels]
-Pages   = ["lp_covariance.jl"]
-Order   = [:function]
-```
-
-### LP with Instrumental Variables
-
-```@autodocs
-Modules = [MacroEconometricModels]
-Pages   = ["lp_iv.jl"]
-Order   = [:function]
-```
-
-### Smooth Local Projections
-
-```@autodocs
-Modules = [MacroEconometricModels]
-Pages   = ["lp_smooth.jl"]
-Order   = [:function]
-```
-
-### State-Dependent Local Projections
-
-```@autodocs
-Modules = [MacroEconometricModels]
-Pages   = ["lp_state.jl"]
-Order   = [:function]
-```
-
-### Propensity Score Local Projections
-
-```@autodocs
-Modules = [MacroEconometricModels]
-Pages   = ["lp_propensity.jl"]
+Pages   = ["lp_extensions.jl"]
 Order   = [:function]
 ```
 
