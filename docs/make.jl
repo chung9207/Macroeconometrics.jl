@@ -17,7 +17,7 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
-        "Theory" => [
+        "by Subject" => [
             "VAR & BVAR" => "manual.md",
             "Local Projections" => "lp.md",
             "Factor Models" => "factormodels.md",
