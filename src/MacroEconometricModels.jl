@@ -219,7 +219,7 @@ export estimate_lp, lp_irf, cumulative_irf
 export estimate_lp_multi, estimate_lp_cholesky, compare_var_lp
 
 # HAC covariance estimators
-export newey_west, white_vcov, optimal_bandwidth_nw, kernel_weight
+export newey_west, white_vcov, driscoll_kraay, optimal_bandwidth_nw, kernel_weight
 export robust_vcov, long_run_variance, long_run_covariance
 
 # LP-IV (Stock & Watson 2018)

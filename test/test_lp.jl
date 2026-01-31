@@ -1019,6 +1019,8 @@ using Random
     end
 
     @testset "DriscollKraay Covariance Estimator" begin
+        Random.seed!(87878)
+
         # Test DriscollKraayEstimator type construction
         dk_est = MacroEconometricModels.DriscollKraayEstimator{Float64}(5)
         @test dk_est.bandwidth == 5
@@ -1037,9 +1039,54 @@ using Random
         # Invalid bandwidth should throw
         @test_throws ArgumentError MacroEconometricModels.DriscollKraayEstimator{Float64}(-1)
 
-        # Note: robust_vcov is not yet implemented for DriscollKraayEstimator
-        # Testing that estimate_lp correctly creates the estimator but would need
-        # implementation to actually use it
+        # Test driscoll_kraay function directly
+        T_dk = 200
+        X_dk = hcat(ones(T_dk), randn(T_dk, 2))
+        u_dk = randn(T_dk)
+
+        V_dk = driscoll_kraay(X_dk, u_dk; bandwidth=5)
+        @test size(V_dk) == (3, 3)
+        @test V_dk ≈ V_dk' atol=1e-10  # Symmetric
+        @test all(isfinite.(V_dk))
+
+        # Compare with Newey-West (should give similar structure for time series)
+        V_nw = newey_west(X_dk, u_dk; bandwidth=5)
+        # Both should be positive semi-definite and similar in structure
+        @test size(V_dk) == size(V_nw)
+        @test all(diag(V_dk) .>= 0)  # Non-negative diagonal
+        @test all(diag(V_nw) .>= 0)
+
+        # Test multivariate version
+        U_dk = randn(T_dk, 2)
+        V_dk_multi = driscoll_kraay(X_dk, U_dk; bandwidth=5)
+        @test size(V_dk_multi) == (6, 6)
+        @test V_dk_multi ≈ V_dk_multi' atol=1e-10
+
+        # Test robust_vcov dispatch
+        dk_estimator = MacroEconometricModels.DriscollKraayEstimator{Float64}(5)
+        V_dispatch = MacroEconometricModels.robust_vcov(X_dk, u_dk, dk_estimator)
+        @test V_dispatch ≈ V_dk atol=1e-10
+
+        # Test in estimate_lp
+        n_dk = 2
+        Y_dk = zeros(T_dk, n_dk)
+        for t in 2:T_dk
+            Y_dk[t, :] = 0.5 * Y_dk[t-1, :] + randn(n_dk)
+        end
+
+        model_dk = estimate_lp(Y_dk, 1, 8; lags=2, cov_type=:driscoll_kraay, bandwidth=5)
+        @test model_dk isa LPModel
+        irf_dk = lp_irf(model_dk)
+        @test all(isfinite.(irf_dk.se))
+        @test all(irf_dk.ci_lower .<= irf_dk.values)
+        @test all(irf_dk.values .<= irf_dk.ci_upper)
+
+        # Test with different kernels
+        for kernel in [:bartlett, :parzen, :quadratic_spectral]
+            V_kernel = driscoll_kraay(X_dk, u_dk; bandwidth=5, kernel=kernel)
+            @test size(V_kernel) == (3, 3)
+            @test all(isfinite.(V_kernel))
+        end
     end
 
     @testset "BSplineBasis Accessor" begin

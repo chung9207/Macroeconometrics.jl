@@ -401,6 +401,93 @@ function robust_vcov(X::AbstractMatrix{T}, residuals::AbstractMatrix{T},
     white_vcov(X, residuals)
 end
 
+"""
+    driscoll_kraay(X::AbstractMatrix{T}, u::AbstractVector{T};
+                   bandwidth::Int=0, kernel::Symbol=:bartlett) -> Matrix{T}
+
+Driscoll-Kraay standard errors for time series regression.
+
+In a pure time series context, this is equivalent to Newey-West HAC estimation
+applied to the moment conditions X'u. For panel data applications, it would
+average across cross-sectional units first, but here we treat the data as a
+single time series.
+
+# Arguments
+- `X`: Design matrix (T × k)
+- `u`: Residuals vector (T × 1)
+- `bandwidth`: Bandwidth for kernel. If 0, uses optimal bandwidth selection.
+- `kernel`: Kernel function (:bartlett, :parzen, :quadratic_spectral, :tukey_hanning)
+
+# Returns
+- Robust covariance matrix (k × k)
+
+# References
+- Driscoll, J. C., & Kraay, A. C. (1998). Consistent covariance matrix estimation
+  with spatially dependent panel data. Review of Economics and Statistics.
+"""
+function driscoll_kraay(X::AbstractMatrix{T}, u::AbstractVector{T};
+                        bandwidth::Int=0, kernel::Symbol=:bartlett) where {T<:AbstractFloat}
+    n, k = size(X)
+
+    # Moment conditions: g_t = X_t' * u_t (k × 1 for each t)
+    # In time series context, this is just the score contribution at each t
+    G = X .* u  # T × k matrix of moment contributions
+
+    # Compute (X'X)^(-1)
+    XtX = X' * X
+    XtX_inv = robust_inv(XtX)
+
+    # Compute long-run covariance of moment conditions
+    # S = Σⱼ₌₋∞^∞ E[gₜgₜ₋ⱼ']
+    S = long_run_covariance(G; bandwidth=bandwidth, kernel=kernel)
+
+    # Sandwich formula: V = n * (X'X)^(-1) * S * (X'X)^(-1)
+    V = n * XtX_inv * S * XtX_inv
+
+    # Ensure symmetry
+    (V + V') / 2
+end
+
+"""
+    driscoll_kraay(X::AbstractMatrix{T}, U::AbstractMatrix{T};
+                   bandwidth::Int=0, kernel::Symbol=:bartlett) -> Matrix{T}
+
+Driscoll-Kraay standard errors for multi-equation system.
+
+# Arguments
+- `X`: Design matrix (T × k)
+- `U`: Residuals matrix (T × n_eq)
+- `bandwidth`: Bandwidth for kernel
+- `kernel`: Kernel function
+
+# Returns
+- Block-diagonal robust covariance matrix (k*n_eq × k*n_eq)
+"""
+function driscoll_kraay(X::AbstractMatrix{T}, U::AbstractMatrix{T};
+                        bandwidth::Int=0, kernel::Symbol=:bartlett) where {T<:AbstractFloat}
+    n, k = size(X)
+    n_eq = size(U, 2)
+
+    V = zeros(T, k * n_eq, k * n_eq)
+    @inbounds for eq in 1:n_eq
+        V_eq = driscoll_kraay(X, @view(U[:, eq]); bandwidth=bandwidth, kernel=kernel)
+        idx = ((eq-1)*k + 1):(eq*k)
+        V[idx, idx] .= V_eq
+    end
+    V
+end
+
+# Dispatch for DriscollKraayEstimator
+function robust_vcov(X::AbstractMatrix{T}, residuals::AbstractVector{T},
+                     estimator::DriscollKraayEstimator) where {T<:AbstractFloat}
+    driscoll_kraay(X, residuals; bandwidth=estimator.bandwidth, kernel=estimator.kernel)
+end
+
+function robust_vcov(X::AbstractMatrix{T}, residuals::AbstractMatrix{T},
+                     estimator::DriscollKraayEstimator) where {T<:AbstractFloat}
+    driscoll_kraay(X, residuals; bandwidth=estimator.bandwidth, kernel=estimator.kernel)
+end
+
 # =============================================================================
 # Long-Run Variance Estimation
 # =============================================================================
