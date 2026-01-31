@@ -30,19 +30,6 @@ BayesianFEVD
 AbstractFEVD
 ```
 
-### Local Projection Types
-
-```@docs
-AbstractLPModel
-LPModel
-LPIVModel
-SmoothLPModel
-StateLPModel
-PropensityLPModel
-AbstractLPImpulseResponse
-LPImpulseResponse
-```
-
 ### Factor Models
 
 ```@docs
@@ -67,15 +54,6 @@ MinnesotaHyperparameters
 AbstractPrior
 ```
 
-### Covariance Estimator Types
-
-```@docs
-AbstractCovarianceEstimator
-NeweyWestEstimator
-WhiteEstimator
-DriscollKraayEstimator
-```
-
 ### SVAR Identification Types
 
 ```@docs
@@ -83,14 +61,6 @@ ZeroRestriction
 SignRestriction
 SVARRestrictions
 AriasSVARResult
-```
-
-### Helper Types
-
-```@docs
-BSplineBasis
-StateTransition
-PropensityScoreConfig
 ```
 
 ---
