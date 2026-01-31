@@ -38,6 +38,6 @@ jobs:
         shell: julia --project=docs --color=yes {0}
         run: |
           using Documenter: DocMeta, doctest
-          using Macroeconometrics
-          DocMeta.setdocmeta!(Macroeconometrics, :DocTestSetup, :(using Macroeconometrics); recursive=true)
-          doctest(Macroeconometrics)
+          using MacroEconometricModels
+          DocMeta.setdocmeta!(MacroEconometricModels, :DocTestSetup, :(using MacroEconometricModels); recursive=true)
+          doctest(MacroEconometricModels)
