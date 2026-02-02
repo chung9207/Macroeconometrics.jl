@@ -30,7 +30,11 @@ makedocs(;
             "Unit Root & Cointegration" => "hypothesis_tests.md",
         ],
         "Examples" => "examples.md",
-        "API Reference" => "api.md",
+        "API Reference" => [
+            "Overview" => "api.md",
+            "Types" => "api_types.md",
+            "Functions" => "api_functions.md",
+        ],
     ],
     checkdocs=:exports,
     warnonly=[:missing_docs, :cross_references, :autodocs_block, :docs_block],

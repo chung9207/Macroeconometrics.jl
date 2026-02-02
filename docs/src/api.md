@@ -1,208 +1,13 @@
 # API Reference
 
-This page provides the complete API documentation for **MacroEconometricModels.jl**, organized by functionality.
+This section provides the complete API documentation for **MacroEconometricModels.jl**.
 
-## Module
+The API documentation is organized into the following pages:
 
-```@docs
-MacroEconometricModels.MacroEconometricModels
-```
+- **[Types](@ref api_types)**: Core type definitions for models, results, and estimators
+- **[Functions](@ref api_functions)**: Function documentation organized by module
 
----
-
-## Core Types
-
-### VAR Models
-
-```@docs
-VARModel
-AbstractVARModel
-```
-
-### Impulse Response and FEVD
-
-```@docs
-ImpulseResponse
-BayesianImpulseResponse
-AbstractImpulseResponse
-FEVD
-BayesianFEVD
-AbstractFEVD
-```
-
-### Factor Models
-
-```@docs
-FactorModel
-DynamicFactorModel
-GeneralizedDynamicFactorModel
-AbstractFactorModel
-```
-
-### GMM Types
-
-```@docs
-AbstractGMMModel
-GMMModel
-GMMWeighting
-```
-
-### Prior Types
-
-```@docs
-MinnesotaHyperparameters
-AbstractPrior
-```
-
-### Unit Root Test Types
-
-```@docs
-AbstractUnitRootTest
-ADFResult
-KPSSResult
-PPResult
-ZAResult
-NgPerronResult
-JohansenResult
-VARStationarityResult
-```
-
-### SVAR Identification Types
-
-```@docs
-ZeroRestriction
-SignRestriction
-SVARRestrictions
-AriasSVARResult
-```
-
----
-
-## VAR Estimation
-
-### Frequentist Estimation
-
-```@autodocs
-Modules = [MacroEconometricModels]
-Pages   = ["estimation.jl"]
-Order   = [:function]
-```
-
-### Bayesian Estimation
-
-```@autodocs
-Modules = [MacroEconometricModels]
-Pages   = ["bayesian.jl"]
-Order   = [:function]
-```
-
-### Prior Specification
-
-```@autodocs
-Modules = [MacroEconometricModels]
-Pages   = ["priors.jl"]
-Order   = [:function]
-```
-
----
-
-## Structural Analysis
-
-### Identification Schemes
-
-```@autodocs
-Modules = [MacroEconometricModels]
-Pages   = ["identification.jl"]
-Order   = [:function]
-```
-
-### Impulse Response Functions
-
-```@autodocs
-Modules = [MacroEconometricModels]
-Pages   = ["irf.jl"]
-Order   = [:function]
-```
-
-### Forecast Error Variance Decomposition
-
-```@autodocs
-Modules = [MacroEconometricModels]
-Pages   = ["fevd.jl"]
-Order   = [:function]
-```
-
----
-
-## Local Projections
-
-### LP Types
-
-```@autodocs
-Modules = [MacroEconometricModels]
-Pages   = ["lp_types.jl"]
-Order   = [:type]
-```
-
-### Core LP Estimation and Covariance
-
-```@autodocs
-Modules = [MacroEconometricModels]
-Pages   = ["lp_core.jl"]
-Order   = [:function]
-```
-
-### LP Extensions (IV, Smooth, State-Dependent, Propensity)
-
-```@autodocs
-Modules = [MacroEconometricModels]
-Pages   = ["lp_extensions.jl"]
-Order   = [:function]
-```
-
----
-
-## Factor Models
-
-```@autodocs
-Modules = [MacroEconometricModels]
-Pages   = ["factormodels.jl"]
-Order   = [:function]
-```
-
----
-
-## GMM Estimation
-
-```@autodocs
-Modules = [MacroEconometricModels]
-Pages   = ["gmm.jl"]
-Order   = [:function]
-```
-
----
-
-## Unit Root and Cointegration Tests
-
-```@autodocs
-Modules = [MacroEconometricModels]
-Pages   = ["unitroot.jl"]
-Order   = [:function]
-```
-
----
-
-## Utility Functions
-
-```@autodocs
-Modules = [MacroEconometricModels]
-Pages   = ["utils.jl"]
-Order   = [:function]
-```
-
----
-
-## Function Index
+## Quick Reference Tables
 
 ### Estimation Functions
 
@@ -217,6 +22,8 @@ Order   = [:function]
 | `estimate_propensity_lp(Y, treatment, covariates, H; ...)` | LP with propensity scores |
 | `doubly_robust_lp(Y, treatment, covariates, H; ...)` | Doubly robust LP estimator |
 | `estimate_factors(X, r; ...)` | Static factor model via PCA |
+| `estimate_dynamic_factors(X, r, p; ...)` | Dynamic factor model |
+| `estimate_gdfm(X, q; ...)` | Generalized dynamic factor model |
 | `estimate_gmm(moment_fn, theta0, data; ...)` | GMM estimation |
 
 ### Structural Analysis Functions
@@ -229,6 +36,20 @@ Order   = [:function]
 | `identify_sign(model; ...)` | Sign restriction identification |
 | `identify_long_run(model)` | Blanchard-Quah identification |
 | `identify_narrative(model; ...)` | Narrative sign restrictions |
+
+### Unit Root Test Functions
+
+| Function | Description |
+|----------|-------------|
+| `adf_test(y; ...)` | Augmented Dickey-Fuller unit root test |
+| `kpss_test(y; ...)` | KPSS stationarity test |
+| `pp_test(y; ...)` | Phillips-Perron unit root test |
+| `za_test(y; ...)` | Zivot-Andrews structural break test |
+| `ngperron_test(y; ...)` | Ng-Perron unit root tests (MZα, MZt, MSB, MPT) |
+| `johansen_test(Y, p; ...)` | Johansen cointegration test |
+| `is_stationary(model)` | Check VAR model stationarity |
+| `unit_root_summary(y; ...)` | Run multiple tests with summary |
+| `test_all_variables(Y; ...)` | Apply test to all columns |
 
 ### LP IRF Extraction
 
@@ -248,20 +69,6 @@ Order   = [:function]
 | `ic_criteria(X, r_max)` | Bai-Ng information criteria |
 | `scree_plot_data(model)` | Data for scree plot |
 
-### Unit Root Test Functions
-
-| Function | Description |
-|----------|-------------|
-| `adf_test(y; ...)` | Augmented Dickey-Fuller unit root test |
-| `kpss_test(y; ...)` | KPSS stationarity test |
-| `pp_test(y; ...)` | Phillips-Perron unit root test |
-| `za_test(y; ...)` | Zivot-Andrews structural break test |
-| `ngperron_test(y; ...)` | Ng-Perron unit root tests (MZα, MZt, MSB, MPT) |
-| `johansen_test(Y, p; ...)` | Johansen cointegration test |
-| `is_stationary(model)` | Check VAR model stationarity |
-| `unit_root_summary(y; ...)` | Run multiple tests with summary |
-| `test_all_variables(Y; ...)` | Apply test to all columns |
-
 ### Diagnostic Functions
 
 | Function | Description |
@@ -280,6 +87,7 @@ Order   = [:function]
 |----------|-------------|
 | `newey_west(X, residuals; ...)` | Newey-West HAC estimator |
 | `white_vcov(X, residuals; ...)` | White heteroskedasticity-robust |
+| `driscoll_kraay(X, residuals; ...)` | Driscoll-Kraay panel-robust |
 | `long_run_variance(x; ...)` | Long-run variance estimate |
 | `long_run_covariance(X; ...)` | Long-run covariance matrix |
 | `optimal_bandwidth_nw(residuals)` | Automatic bandwidth selection |
@@ -292,55 +100,3 @@ Order   = [:function]
 | `companion_matrix(B, n, p)` | VAR companion form |
 | `robust_inv(A)` | Robust matrix inverse |
 | `safe_cholesky(A; ...)` | Stable Cholesky decomposition |
-
----
-
-## Type Hierarchy
-
-```
-AbstractVARModel
-└── VARModel{T}
-
-AbstractImpulseResponse
-├── ImpulseResponse{T}
-├── BayesianImpulseResponse{T}
-└── AbstractLPImpulseResponse
-    └── LPImpulseResponse{T}
-
-AbstractFEVD
-├── FEVD{T}
-└── BayesianFEVD{T}
-
-AbstractFactorModel
-├── FactorModel{T}
-├── DynamicFactorModel{T}
-└── GeneralizedDynamicFactorModel{T}
-
-AbstractLPModel
-├── LPModel{T}
-├── LPIVModel{T}
-├── SmoothLPModel{T}
-├── StateLPModel{T}
-└── PropensityLPModel{T}
-
-AbstractCovarianceEstimator
-├── NeweyWestEstimator{T}
-├── WhiteEstimator
-└── DriscollKraayEstimator{T}
-
-AbstractGMMModel
-└── GMMModel{T}
-
-AbstractPrior
-└── MinnesotaHyperparameters{T}
-
-AbstractUnitRootTest <: StatsAPI.HypothesisTest
-├── ADFResult{T}
-├── KPSSResult{T}
-├── PPResult{T}
-├── ZAResult{T}
-├── NgPerronResult{T}
-└── JohansenResult{T}
-
-VARStationarityResult{T}
-```

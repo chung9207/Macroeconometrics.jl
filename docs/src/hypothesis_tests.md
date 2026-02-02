@@ -511,16 +511,15 @@ pvalue(result)  # P-value
 
 ### Type Hierarchy
 
-```@docs
-AbstractUnitRootTest
-ADFResult
-KPSSResult
-PPResult
-ZAResult
-NgPerronResult
-JohansenResult
-VARStationarityResult
-```
+All unit root test results inherit from `AbstractUnitRootTest` and implement the StatsAPI interface. See the [API Reference](@ref) for detailed type documentation.
+
+- `ADFResult` - Augmented Dickey-Fuller test result
+- `KPSSResult` - KPSS stationarity test result
+- `PPResult` - Phillips-Perron test result
+- `ZAResult` - Zivot-Andrews structural break test result
+- `NgPerronResult` - Ng-Perron test result (MZα, MZt, MSB, MPT)
+- `JohansenResult` - Johansen cointegration test result
+- `VARStationarityResult` - VAR model stationarity check result
 
 ---
 
