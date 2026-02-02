@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Examples · MacroEconometricModels.jl</title><meta name="title" content="Examples · MacroEconometricModels.jl"/><meta property="og:title" content="Examples · MacroEconometricModels.jl"/><meta property="twitter:title" content="Examples · MacroEconometricModels.jl"/><meta name="description" content="Documentation for MacroEconometricModels.jl."/><meta property="og:description" content="Documentation for MacroEconometricModels.jl."/><meta property="twitter:description" content="Documentation for MacroEconometricModels.jl."/><meta property="og:url" content="https://chung9207.github.io/MacroEconometricModels.jl/examples/"/><meta property="twitter:url" content="https://chung9207.github.io/MacroEconometricModels.jl/examples/"/><link rel="canonical" href="https://chung9207.github.io/MacroEconometricModels.jl/examples/"/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">MacroEconometricModels.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><span class="tocitem">by Subject</span><ul><li><a class="tocitem" href="../manual/">VAR &amp; BVAR</a></li><li><a class="tocitem" href="../lp/">Local Projections</a></li><li><a class="tocitem" href="../factormodels/">Factor Models</a></li></ul></li><li class="is-active"><a class="tocitem" href>Examples</a><ul class="internal"><li><a class="tocitem" href="#Example-1:-Three-Variable-VAR-Analysis"><span>Example 1: Three-Variable VAR Analysis</span></a></li><li><a class="tocitem" href="#Example-2:-Bayesian-VAR-with-Minnesota-Prior"><span>Example 2: Bayesian VAR with Minnesota Prior</span></a></li><li><a class="tocitem" href="#Example-3:-Local-Projections"><span>Example 3: Local Projections</span></a></li><li><a class="tocitem" href="#Example-4:-Factor-Model-for-Large-Panels"><span>Example 4: Factor Model for Large Panels</span></a></li><li><a class="tocitem" href="#Example-5:-GMM-Estimation"><span>Example 5: GMM Estimation</span></a></li><li><a class="tocitem" href="#Example-6:-Complete-Workflow"><span>Example 6: Complete Workflow</span></a></li><li><a class="tocitem" href="#Best-Practices"><span>Best Practices</span></a></li></ul></li><li><a class="tocitem" href="../api/">API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Examples</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Examples</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/chung9207/MacroEconometricModels.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/chung9207/MacroEconometricModels.jl/blob/main/docs/src/examples.md#" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Examples"><a class="docs-heading-anchor" href="#Examples">Examples</a><a id="Examples-1"></a><a class="docs-heading-anchor-permalink" href="#Examples" title="Permalink"></a></h1><p>This chapter provides comprehensive worked examples demonstrating the main functionality of <strong>MacroEconometricModels.jl</strong>. Each example includes complete code, economic interpretation, and best practices.</p><h2 id="Example-1:-Three-Variable-VAR-Analysis"><a class="docs-heading-anchor" href="#Example-1:-Three-Variable-VAR-Analysis">Example 1: Three-Variable VAR Analysis</a><a id="Example-1:-Three-Variable-VAR-Analysis-1"></a><a class="docs-heading-anchor-permalink" href="#Example-1:-Three-Variable-VAR-Analysis" title="Permalink"></a></h2><p>This example walks through a complete analysis of a macroeconomic VAR with GDP growth, inflation, and the federal funds rate.</p><h3 id="Setup-and-Data-Generation"><a class="docs-heading-anchor" href="#Setup-and-Data-Generation">Setup and Data Generation</a><a id="Setup-and-Data-Generation-1"></a><a class="docs-heading-anchor-permalink" href="#Setup-and-Data-Generation" title="Permalink"></a></h3><pre><code class="language-julia hljs">using MacroEconometricModels
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Examples · MacroEconometricModels.jl</title><meta name="title" content="Examples · MacroEconometricModels.jl"/><meta property="og:title" content="Examples · MacroEconometricModels.jl"/><meta property="twitter:title" content="Examples · MacroEconometricModels.jl"/><meta name="description" content="Documentation for MacroEconometricModels.jl."/><meta property="og:description" content="Documentation for MacroEconometricModels.jl."/><meta property="twitter:description" content="Documentation for MacroEconometricModels.jl."/><meta property="og:url" content="https://chung9207.github.io/MacroEconometricModels.jl/examples/"/><meta property="twitter:url" content="https://chung9207.github.io/MacroEconometricModels.jl/examples/"/><link rel="canonical" href="https://chung9207.github.io/MacroEconometricModels.jl/examples/"/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">MacroEconometricModels.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><span class="tocitem">Frequentist Models</span><ul><li><a class="tocitem" href="../manual/">VAR</a></li><li><a class="tocitem" href="../lp/">Local Projections</a></li><li><a class="tocitem" href="../factormodels/">Factor Models</a></li></ul></li><li><span class="tocitem">Bayesian Models</span><ul><li><a class="tocitem" href="../bayesian/">Bayesian VAR</a></li></ul></li><li><span class="tocitem">Hypothesis Tests</span><ul><li><a class="tocitem" href="../hypothesis_tests/">Unit Root &amp; Cointegration</a></li></ul></li><li class="is-active"><a class="tocitem" href>Examples</a><ul class="internal"><li><a class="tocitem" href="#Example-1:-Three-Variable-VAR-Analysis"><span>Example 1: Three-Variable VAR Analysis</span></a></li><li><a class="tocitem" href="#Example-2:-Bayesian-VAR-with-Minnesota-Prior"><span>Example 2: Bayesian VAR with Minnesota Prior</span></a></li><li><a class="tocitem" href="#Example-3:-Local-Projections"><span>Example 3: Local Projections</span></a></li><li><a class="tocitem" href="#Example-4:-Factor-Model-for-Large-Panels"><span>Example 4: Factor Model for Large Panels</span></a></li><li><a class="tocitem" href="#Example-5:-GMM-Estimation"><span>Example 5: GMM Estimation</span></a></li><li><a class="tocitem" href="#Example-6:-Complete-Workflow"><span>Example 6: Complete Workflow</span></a></li><li><a class="tocitem" href="#Example-7:-Unit-Root-Testing-and-Pre-Estimation-Analysis"><span>Example 7: Unit Root Testing and Pre-Estimation Analysis</span></a></li><li><a class="tocitem" href="#Best-Practices"><span>Best Practices</span></a></li></ul></li><li><span class="tocitem">API Reference</span><ul><li><a class="tocitem" href="../api/">Overview</a></li><li><a class="tocitem" href="../api_types/">Types</a></li><li><a class="tocitem" href="../api_functions/">Functions</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Examples</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Examples</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/chung9207/MacroEconometricModels.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/chung9207/MacroEconometricModels.jl/blob/main/docs/src/examples.md#" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Examples"><a class="docs-heading-anchor" href="#Examples">Examples</a><a id="Examples-1"></a><a class="docs-heading-anchor-permalink" href="#Examples" title="Permalink"></a></h1><p>This chapter provides comprehensive worked examples demonstrating the main functionality of <strong>MacroEconometricModels.jl</strong>. Each example includes complete code, economic interpretation, and best practices.</p><h2 id="Example-1:-Three-Variable-VAR-Analysis"><a class="docs-heading-anchor" href="#Example-1:-Three-Variable-VAR-Analysis">Example 1: Three-Variable VAR Analysis</a><a id="Example-1:-Three-Variable-VAR-Analysis-1"></a><a class="docs-heading-anchor-permalink" href="#Example-1:-Three-Variable-VAR-Analysis" title="Permalink"></a></h2><p>This example walks through a complete analysis of a macroeconomic VAR with GDP growth, inflation, and the federal funds rate.</p><h3 id="Setup-and-Data-Generation"><a class="docs-heading-anchor" href="#Setup-and-Data-Generation">Setup and Data Generation</a><a id="Setup-and-Data-Generation-1"></a><a class="docs-heading-anchor-permalink" href="#Setup-and-Data-Generation" title="Permalink"></a></h3><pre><code class="language-julia hljs">using MacroEconometricModels
 using Random
 using LinearAlgebra
 using Statistics
@@ -452,4 +452,246 @@ println(&quot;\nSmooth LP variance reduction: &quot;,
 
 println(&quot;\n&quot; * &quot;=&quot;^50)
 println(&quot;Analysis Complete!&quot;)
-println(&quot;=&quot;^50)</code></pre><hr/><h2 id="Best-Practices"><a class="docs-heading-anchor" href="#Best-Practices">Best Practices</a><a id="Best-Practices-1"></a><a class="docs-heading-anchor-permalink" href="#Best-Practices" title="Permalink"></a></h2><h3 id="Data-Preparation"><a class="docs-heading-anchor" href="#Data-Preparation">Data Preparation</a><a id="Data-Preparation-1"></a><a class="docs-heading-anchor-permalink" href="#Data-Preparation" title="Permalink"></a></h3><ol><li><strong>Stationarity</strong>: Ensure data is stationary (difference if needed)</li><li><strong>Outliers</strong>: Check for and handle outliers</li><li><strong>Missing data</strong>: Factor models can handle some missing data; VARs require complete data</li><li><strong>Scaling</strong>: For factor models, standardize variables</li></ol><h3 id="Model-Selection"><a class="docs-heading-anchor" href="#Model-Selection">Model Selection</a><a id="Model-Selection-1"></a><a class="docs-heading-anchor-permalink" href="#Model-Selection" title="Permalink"></a></h3><ol><li><strong>Lag length</strong>: Use information criteria (BIC is more conservative)</li><li><strong>Number of factors</strong>: Use Bai-Ng criteria; prefer IC2 or IC3</li><li><strong>Prior tightness</strong>: Optimize via marginal likelihood for large models</li></ol><h3 id="Identification"><a class="docs-heading-anchor" href="#Identification">Identification</a><a id="Identification-1"></a><a class="docs-heading-anchor-permalink" href="#Identification" title="Permalink"></a></h3><ol><li><strong>Economic theory</strong>: Base restrictions on economic reasoning</li><li><strong>Robustness</strong>: Try multiple identification schemes</li><li><strong>Narrative</strong>: Use historical knowledge when available</li></ol><h3 id="Inference"><a class="docs-heading-anchor" href="#Inference">Inference</a><a id="Inference-1"></a><a class="docs-heading-anchor-permalink" href="#Inference" title="Permalink"></a></h3><ol><li><strong>HAC standard errors</strong>: Always use for LP at horizons &gt; 0</li><li><strong>Credible intervals</strong>: Report 68% and 90% bands for Bayesian</li><li><strong>Bootstrap</strong>: Use for frequentist VAR confidence intervals</li></ol><h3 id="Reporting"><a class="docs-heading-anchor" href="#Reporting">Reporting</a><a id="Reporting-1"></a><a class="docs-heading-anchor-permalink" href="#Reporting" title="Permalink"></a></h3><ol><li><strong>Present both</strong>: VAR and LP estimates as robustness check</li><li><strong>Horizon selection</strong>: Focus on economically meaningful horizons</li><li><strong>FEVD</strong>: Report at multiple horizons (short, medium, long-run)</li></ol></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../factormodels/">« Factor Models</a><a class="docs-footer-nextpage" href="../api/">API Reference »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Monday 2 February 2026 17:25">Monday 2 February 2026</span>. Using Julia version 1.12.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+println(&quot;=&quot;^50)</code></pre><hr/><h2 id="Example-7:-Unit-Root-Testing-and-Pre-Estimation-Analysis"><a class="docs-heading-anchor" href="#Example-7:-Unit-Root-Testing-and-Pre-Estimation-Analysis">Example 7: Unit Root Testing and Pre-Estimation Analysis</a><a id="Example-7:-Unit-Root-Testing-and-Pre-Estimation-Analysis-1"></a><a class="docs-heading-anchor-permalink" href="#Example-7:-Unit-Root-Testing-and-Pre-Estimation-Analysis" title="Permalink"></a></h2><p>This example demonstrates comprehensive unit root testing before fitting VAR models.</p><h3 id="Individual-Unit-Root-Tests"><a class="docs-heading-anchor" href="#Individual-Unit-Root-Tests">Individual Unit Root Tests</a><a id="Individual-Unit-Root-Tests-1"></a><a class="docs-heading-anchor-permalink" href="#Individual-Unit-Root-Tests" title="Permalink"></a></h3><pre><code class="language-julia hljs">using MacroEconometricModels
+using Random
+using Statistics
+
+Random.seed!(42)
+
+# Generate data: mix of I(0) and I(1) series
+T = 200
+y_stationary = randn(T)                      # I(0): stationary
+y_random_walk = cumsum(randn(T))             # I(1): unit root
+y_trend_stat = 0.1 .* (1:T) .+ randn(T)      # Trend stationary
+y_with_break = vcat(randn(100), randn(100) .+ 2)  # Structural break
+
+# === ADF Test ===
+println(&quot;=&quot;^60)
+println(&quot;ADF Test (H₀: unit root)&quot;)
+println(&quot;=&quot;^60)
+
+adf_stat = adf_test(y_stationary; lags=:aic, regression=:constant)
+println(&quot;\nStationary series:&quot;)
+println(&quot;  Statistic: &quot;, round(adf_stat.statistic, digits=3))
+println(&quot;  P-value: &quot;, round(adf_stat.pvalue, digits=4))
+println(&quot;  Lags: &quot;, adf_stat.lags)
+
+adf_rw = adf_test(y_random_walk; lags=:aic, regression=:constant)
+println(&quot;\nRandom walk:&quot;)
+println(&quot;  Statistic: &quot;, round(adf_rw.statistic, digits=3))
+println(&quot;  P-value: &quot;, round(adf_rw.pvalue, digits=4))</code></pre><h3 id="KPSS-Complementary-Test"><a class="docs-heading-anchor" href="#KPSS-Complementary-Test">KPSS Complementary Test</a><a id="KPSS-Complementary-Test-1"></a><a class="docs-heading-anchor-permalink" href="#KPSS-Complementary-Test" title="Permalink"></a></h3><pre><code class="language-julia hljs"># === KPSS Test ===
+println(&quot;\n&quot; * &quot;=&quot;^60)
+println(&quot;KPSS Test (H₀: stationarity)&quot;)
+println(&quot;=&quot;^60)
+
+kpss_stat = kpss_test(y_stationary; regression=:constant)
+println(&quot;\nStationary series:&quot;)
+println(&quot;  Statistic: &quot;, round(kpss_stat.statistic, digits=4))
+println(&quot;  P-value: &quot;, kpss_stat.pvalue &gt; 0.10 ? &quot;&gt;0.10&quot; : round(kpss_stat.pvalue, digits=4))
+println(&quot;  Bandwidth: &quot;, kpss_stat.bandwidth)
+
+kpss_rw = kpss_test(y_random_walk; regression=:constant)
+println(&quot;\nRandom walk:&quot;)
+println(&quot;  Statistic: &quot;, round(kpss_rw.statistic, digits=4))
+println(&quot;  P-value: &quot;, kpss_rw.pvalue &lt; 0.01 ? &quot;&lt;0.01&quot; : round(kpss_rw.pvalue, digits=4))</code></pre><h3 id="Combining-ADF-and-KPSS-for-Robust-Inference"><a class="docs-heading-anchor" href="#Combining-ADF-and-KPSS-for-Robust-Inference">Combining ADF and KPSS for Robust Inference</a><a id="Combining-ADF-and-KPSS-for-Robust-Inference-1"></a><a class="docs-heading-anchor-permalink" href="#Combining-ADF-and-KPSS-for-Robust-Inference" title="Permalink"></a></h3><pre><code class="language-julia hljs"># === Combined Analysis ===
+println(&quot;\n&quot; * &quot;=&quot;^60)
+println(&quot;Combined ADF + KPSS Analysis&quot;)
+println(&quot;=&quot;^60)
+
+function unit_root_decision(y; name=&quot;Series&quot;)
+    adf = adf_test(y; lags=:aic)
+    kpss = kpss_test(y)
+
+    adf_reject = adf.pvalue &lt; 0.05  # Reject unit root
+    kpss_reject = kpss.pvalue &lt; 0.05  # Reject stationarity
+
+    decision = if adf_reject &amp;&amp; !kpss_reject
+        &quot;I(0) - Stationary&quot;
+    elseif !adf_reject &amp;&amp; kpss_reject
+        &quot;I(1) - Unit root&quot;
+    elseif adf_reject &amp;&amp; kpss_reject
+        &quot;Conflicting (possible structural break)&quot;
+    else
+        &quot;Inconclusive&quot;
+    end
+
+    println(&quot;\n$name:&quot;)
+    println(&quot;  ADF p-value: &quot;, round(adf.pvalue, digits=4))
+    println(&quot;  KPSS p-value: &quot;, round(kpss.pvalue, digits=4))
+    println(&quot;  Decision: $decision&quot;)
+
+    return decision
+end
+
+unit_root_decision(y_stationary; name=&quot;Stationary series&quot;)
+unit_root_decision(y_random_walk; name=&quot;Random walk&quot;)
+unit_root_decision(y_trend_stat; name=&quot;Trend stationary&quot;)</code></pre><h3 id="Testing-for-Structural-Breaks"><a class="docs-heading-anchor" href="#Testing-for-Structural-Breaks">Testing for Structural Breaks</a><a id="Testing-for-Structural-Breaks-1"></a><a class="docs-heading-anchor-permalink" href="#Testing-for-Structural-Breaks" title="Permalink"></a></h3><pre><code class="language-julia hljs"># === Zivot-Andrews Test ===
+println(&quot;\n&quot; * &quot;=&quot;^60)
+println(&quot;Zivot-Andrews Test (H₀: unit root without break)&quot;)
+println(&quot;=&quot;^60)
+
+za_result = za_test(y_with_break; regression=:constant, trim=0.15)
+println(&quot;\nSeries with structural break:&quot;)
+println(&quot;  Minimum t-stat: &quot;, round(za_result.statistic, digits=3))
+println(&quot;  P-value: &quot;, round(za_result.pvalue, digits=4))
+println(&quot;  Break index: &quot;, za_result.break_index)
+println(&quot;  Break at: &quot;, round(za_result.break_fraction * 100, digits=1), &quot;% of sample&quot;)
+
+# Compare with standard ADF
+adf_break = adf_test(y_with_break)
+println(&quot;\n  ADF (ignoring break): p=&quot;, round(adf_break.pvalue, digits=4))
+println(&quot;  ZA (allowing break): p=&quot;, round(za_result.pvalue, digits=4))</code></pre><h3 id="Ng-Perron-Tests-for-Small-Samples"><a class="docs-heading-anchor" href="#Ng-Perron-Tests-for-Small-Samples">Ng-Perron Tests for Small Samples</a><a id="Ng-Perron-Tests-for-Small-Samples-1"></a><a class="docs-heading-anchor-permalink" href="#Ng-Perron-Tests-for-Small-Samples" title="Permalink"></a></h3><pre><code class="language-julia hljs"># === Ng-Perron Tests ===
+println(&quot;\n&quot; * &quot;=&quot;^60)
+println(&quot;Ng-Perron Tests (improved size properties)&quot;)
+println(&quot;=&quot;^60)
+
+# Generate smaller sample
+y_small = cumsum(randn(80))
+np_result = ngperron_test(y_small; regression=:constant)
+
+println(&quot;\nSmall sample (n=80):&quot;)
+println(&quot;  MZα: &quot;, round(np_result.MZa, digits=3),
+        &quot; (5% CV: &quot;, np_result.critical_values[:MZa][5], &quot;)&quot;)
+println(&quot;  MZt: &quot;, round(np_result.MZt, digits=3),
+        &quot; (5% CV: &quot;, np_result.critical_values[:MZt][5], &quot;)&quot;)
+println(&quot;  MSB: &quot;, round(np_result.MSB, digits=4),
+        &quot; (5% CV: &quot;, np_result.critical_values[:MSB][5], &quot;)&quot;)
+println(&quot;  MPT: &quot;, round(np_result.MPT, digits=3),
+        &quot; (5% CV: &quot;, np_result.critical_values[:MPT][5], &quot;)&quot;)</code></pre><h3 id="Johansen-Cointegration-Test"><a class="docs-heading-anchor" href="#Johansen-Cointegration-Test">Johansen Cointegration Test</a><a id="Johansen-Cointegration-Test-1"></a><a class="docs-heading-anchor-permalink" href="#Johansen-Cointegration-Test" title="Permalink"></a></h3><pre><code class="language-julia hljs"># === Johansen Cointegration Test ===
+println(&quot;\n&quot; * &quot;=&quot;^60)
+println(&quot;Johansen Cointegration Test&quot;)
+println(&quot;=&quot;^60)
+
+# Generate cointegrated system
+T_coint = 200
+u1, u2, u3 = cumsum(randn(T_coint)), cumsum(randn(T_coint)), randn(T_coint)
+Y_coint = hcat(
+    u1 + 0.1*randn(T_coint),           # I(1)
+    u1 + 0.5*u2 + 0.1*randn(T_coint),  # Cointegrated with first
+    u2 + 0.1*randn(T_coint)            # I(1)
+)
+
+johansen = johansen_test(Y_coint, 2; deterministic=:constant)
+
+println(&quot;\nCointegrated system (3 variables):&quot;)
+println(&quot;  Estimated rank: &quot;, johansen.rank)
+println(&quot;\n  Trace test:&quot;)
+for r in 0:2
+    stat = round(johansen.trace_stats[r+1], digits=2)
+    cv = round(johansen.critical_values_trace[r+1, 2], digits=2)
+    reject = stat &gt; cv ? &quot;Reject&quot; : &quot;Fail to reject&quot;
+    println(&quot;    H₀: r ≤ $r: stat=$stat, 5% CV=$cv → $reject&quot;)
+end
+
+println(&quot;\n  Eigenvalues: &quot;, round.(johansen.eigenvalues, digits=4))
+
+if johansen.rank &gt; 0
+    println(&quot;\n  Cointegrating vector(s):&quot;)
+    for i in 1:johansen.rank
+        println(&quot;    β$i: &quot;, round.(johansen.eigenvectors[:, i], digits=3))
+    end
+end</code></pre><h3 id="Testing-All-Variables-Before-VAR"><a class="docs-heading-anchor" href="#Testing-All-Variables-Before-VAR">Testing All Variables Before VAR</a><a id="Testing-All-Variables-Before-VAR-1"></a><a class="docs-heading-anchor-permalink" href="#Testing-All-Variables-Before-VAR" title="Permalink"></a></h3><pre><code class="language-julia hljs"># === Multi-Variable Pre-VAR Analysis ===
+println(&quot;\n&quot; * &quot;=&quot;^60)
+println(&quot;Pre-VAR Unit Root Analysis&quot;)
+println(&quot;=&quot;^60)
+
+# Typical macro dataset
+Y_macro = hcat(
+    cumsum(randn(T)),           # GDP (I(1))
+    0.8*cumsum(randn(T)[1:T]),  # Inflation (I(1))
+    cumsum(randn(T)),           # Interest rate (I(1))
+    randn(T)                    # Output gap (I(0))
+)
+var_names = [&quot;GDP&quot;, &quot;Inflation&quot;, &quot;Rate&quot;, &quot;Output Gap&quot;]
+
+# Test all variables
+results = test_all_variables(Y_macro; test=:adf)
+
+println(&quot;\nUnit root test results:&quot;)
+println(&quot;-&quot;^50)
+n_i1 = 0
+for (i, r) in enumerate(results)
+    status = r.pvalue &gt; 0.05 ? &quot;I(1)&quot; : &quot;I(0)&quot;
+    n_i1 += r.pvalue &gt; 0.05
+    println(&quot;  $(var_names[i]): p=$(round(r.pvalue, digits=3)) → $status&quot;)
+end
+
+println(&quot;\nSummary: $n_i1 of $(size(Y_macro, 2)) variables appear I(1)&quot;)
+
+# Recommendation
+if n_i1 == size(Y_macro, 2)
+    println(&quot;\nRecommendation: All variables I(1)&quot;)
+    println(&quot;  → Test for cointegration&quot;)
+    println(&quot;  → If cointegrated: use VECM&quot;)
+    println(&quot;  → If not: use VAR in first differences&quot;)
+elseif n_i1 == 0
+    println(&quot;\nRecommendation: All variables I(0)&quot;)
+    println(&quot;  → Use VAR in levels&quot;)
+else
+    println(&quot;\nRecommendation: Mixed I(0)/I(1)&quot;)
+    println(&quot;  → Consider ARDL bounds test&quot;)
+    println(&quot;  → Or difference I(1) variables&quot;)
+end</code></pre><h3 id="Complete-Pre-Estimation-Workflow"><a class="docs-heading-anchor" href="#Complete-Pre-Estimation-Workflow">Complete Pre-Estimation Workflow</a><a id="Complete-Pre-Estimation-Workflow-1"></a><a class="docs-heading-anchor-permalink" href="#Complete-Pre-Estimation-Workflow" title="Permalink"></a></h3><pre><code class="language-julia hljs"># === Complete Workflow ===
+println(&quot;\n&quot; * &quot;=&quot;^60)
+println(&quot;Complete Pre-Estimation Workflow&quot;)
+println(&quot;=&quot;^60)
+
+function pre_estimation_analysis(Y; var_names=nothing, α=0.05)
+    T, n = size(Y)
+    var_names = isnothing(var_names) ? [&quot;Var$i&quot; for i in 1:n] : var_names
+
+    println(&quot;\n1. Individual Unit Root Tests&quot;)
+    println(&quot;-&quot;^40)
+
+    integration_orders = zeros(Int, n)
+    for i in 1:n
+        adf = adf_test(Y[:, i]; lags=:aic)
+        kpss = kpss_test(Y[:, i])
+
+        if adf.pvalue &lt; α &amp;&amp; kpss.pvalue &gt; α
+            integration_orders[i] = 0
+            status = &quot;I(0)&quot;
+        elseif adf.pvalue &gt; α &amp;&amp; kpss.pvalue &lt; α
+            integration_orders[i] = 1
+            status = &quot;I(1)&quot;
+        else
+            integration_orders[i] = -1  # Inconclusive
+            status = &quot;Inconclusive&quot;
+        end
+        println(&quot;  $(var_names[i]): $status (ADF p=$(round(adf.pvalue, digits=3)), KPSS p=$(round(kpss.pvalue, digits=3)))&quot;)
+    end
+
+    n_i1 = sum(integration_orders .== 1)
+    n_i0 = sum(integration_orders .== 0)
+
+    println(&quot;\n2. Summary&quot;)
+    println(&quot;-&quot;^40)
+    println(&quot;  I(0) variables: $n_i0&quot;)
+    println(&quot;  I(1) variables: $n_i1&quot;)
+    println(&quot;  Inconclusive: $(n - n_i0 - n_i1)&quot;)
+
+    # Cointegration test if all I(1)
+    if n_i1 &gt;= 2
+        println(&quot;\n3. Cointegration Test&quot;)
+        println(&quot;-&quot;^40)
+        joh = johansen_test(Y, 2)
+        println(&quot;  Estimated cointegration rank: &quot;, joh.rank)
+
+        if joh.rank &gt; 0
+            println(&quot;  → Cointegration detected&quot;)
+            println(&quot;  → Recommendation: VECM with rank=$(joh.rank)&quot;)
+        else
+            println(&quot;  → No cointegration&quot;)
+            println(&quot;  → Recommendation: VAR in first differences&quot;)
+        end
+    elseif n_i0 == n
+        println(&quot;\n3. Recommendation&quot;)
+        println(&quot;-&quot;^40)
+        println(&quot;  All series stationary → VAR in levels&quot;)
+    end
+
+    return (integration_orders=integration_orders, n_i0=n_i0, n_i1=n_i1)
+end
+
+# Run complete analysis
+result = pre_estimation_analysis(Y_macro; var_names=var_names)</code></pre><hr/><h2 id="Best-Practices"><a class="docs-heading-anchor" href="#Best-Practices">Best Practices</a><a id="Best-Practices-1"></a><a class="docs-heading-anchor-permalink" href="#Best-Practices" title="Permalink"></a></h2><h3 id="Data-Preparation"><a class="docs-heading-anchor" href="#Data-Preparation">Data Preparation</a><a id="Data-Preparation-1"></a><a class="docs-heading-anchor-permalink" href="#Data-Preparation" title="Permalink"></a></h3><ol><li><strong>Stationarity</strong>: Test for unit roots using ADF and KPSS together<ul><li>Both fail to reject → inconclusive, consider structural breaks</li><li>ADF rejects, KPSS doesn&#39;t → stationary (I(0))</li><li>ADF doesn&#39;t reject, KPSS rejects → unit root (I(1))</li></ul></li><li><strong>Structural Breaks</strong>: Use Zivot-Andrews test if visual inspection suggests breaks</li><li><strong>Cointegration</strong>: For I(1) variables, test for cointegration before differencing</li><li><strong>Outliers</strong>: Check for and handle outliers</li><li><strong>Missing data</strong>: Factor models can handle some missing data; VARs require complete data</li><li><strong>Scaling</strong>: For factor models, standardize variables</li></ol><h3 id="Model-Selection"><a class="docs-heading-anchor" href="#Model-Selection">Model Selection</a><a id="Model-Selection-1"></a><a class="docs-heading-anchor-permalink" href="#Model-Selection" title="Permalink"></a></h3><ol><li><strong>Lag length</strong>: Use information criteria (BIC is more conservative)</li><li><strong>Number of factors</strong>: Use Bai-Ng criteria; prefer IC2 or IC3</li><li><strong>Prior tightness</strong>: Optimize via marginal likelihood for large models</li></ol><h3 id="Identification"><a class="docs-heading-anchor" href="#Identification">Identification</a><a id="Identification-1"></a><a class="docs-heading-anchor-permalink" href="#Identification" title="Permalink"></a></h3><ol><li><strong>Economic theory</strong>: Base restrictions on economic reasoning</li><li><strong>Robustness</strong>: Try multiple identification schemes</li><li><strong>Narrative</strong>: Use historical knowledge when available</li></ol><h3 id="Inference"><a class="docs-heading-anchor" href="#Inference">Inference</a><a id="Inference-1"></a><a class="docs-heading-anchor-permalink" href="#Inference" title="Permalink"></a></h3><ol><li><strong>HAC standard errors</strong>: Always use for LP at horizons &gt; 0</li><li><strong>Credible intervals</strong>: Report 68% and 90% bands for Bayesian</li><li><strong>Bootstrap</strong>: Use for frequentist VAR confidence intervals</li></ol><h3 id="Reporting"><a class="docs-heading-anchor" href="#Reporting">Reporting</a><a id="Reporting-1"></a><a class="docs-heading-anchor-permalink" href="#Reporting" title="Permalink"></a></h3><ol><li><strong>Present both</strong>: VAR and LP estimates as robustness check</li><li><strong>Horizon selection</strong>: Focus on economically meaningful horizons</li><li><strong>FEVD</strong>: Report at multiple horizons (short, medium, long-run)</li></ol></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../hypothesis_tests/">« Unit Root &amp; Cointegration</a><a class="docs-footer-nextpage" href="../api/">Overview »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Monday 2 February 2026 18:23">Monday 2 February 2026</span>. Using Julia version 1.12.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
