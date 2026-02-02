@@ -75,6 +75,9 @@ include("estimation.jl")
 include("priors.jl")
 include("bayesian.jl")
 
+# Unit root tests and stationarity diagnostics
+include("unitroot.jl")
+
 # Structural analysis
 include("identification.jl")
 
@@ -123,6 +126,26 @@ export BSplineBasis, StateTransition, PropensityScoreConfig
 
 # GMM types
 export AbstractGMMModel, GMMModel, GMMWeighting
+
+# =============================================================================
+# Exports - Unit Root Tests
+# =============================================================================
+
+# Abstract type
+export AbstractUnitRootTest
+
+# Result types
+export ADFResult, KPSSResult, PPResult, ZAResult, NgPerronResult
+export JohansenResult, VARStationarityResult
+
+# Univariate unit root tests
+export adf_test, kpss_test, pp_test, za_test, ngperron_test
+
+# Multivariate cointegration test
+export johansen_test
+
+# Convenience functions
+export unit_root_summary, test_all_variables
 
 # =============================================================================
 # Exports - VAR Estimation

@@ -9,6 +9,10 @@ using Test
         include("test_core_var.jl")
     end
 
+    @testset "Unit Root Tests" begin
+        include("test_unitroot.jl")
+    end
+
     @testset "Bayesian Estimation" begin
         include("test_bayesian.jl")
         include("test_samplers.jl") # Added sampler tests

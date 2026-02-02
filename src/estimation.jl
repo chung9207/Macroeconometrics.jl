@@ -9,11 +9,19 @@ using LinearAlgebra, Statistics, DataFrames, Distributions
 # =============================================================================
 
 """
-    estimate_var(Y::AbstractMatrix{T}, p::Int) -> VARModel{T}
+    estimate_var(Y::AbstractMatrix{T}, p::Int; check_stability::Bool=true) -> VARModel{T}
 
 Estimate VAR(p) via OLS: Yₜ = c + A₁Yₜ₋₁ + ... + AₚYₜ₋ₚ + uₜ.
+
+# Arguments
+- `Y`: Data matrix (T × n)
+- `p`: Number of lags
+- `check_stability`: If true (default), warns if estimated VAR is non-stationary
+
+# Returns
+`VARModel` with estimated coefficients, residuals, covariance matrix, and information criteria.
 """
-function estimate_var(Y::AbstractMatrix{T}, p::Int) where {T<:AbstractFloat}
+function estimate_var(Y::AbstractMatrix{T}, p::Int; check_stability::Bool=true) where {T<:AbstractFloat}
     T_obs, n = size(Y)
     validate_var_inputs(T_obs, n, p)
 
@@ -36,15 +44,27 @@ function estimate_var(Y::AbstractMatrix{T}, p::Int) where {T<:AbstractFloat}
     bic = log_det + k * log(T_eff) / T_eff
     hqic = log_det + 2k * log(log(T_eff)) / T_eff
 
-    VARModel(Y, p, B, U, Sigma, aic, bic, hqic)
+    model = VARModel(Y, p, B, U, Sigma, aic, bic, hqic)
+
+    # Check stationarity via companion matrix eigenvalues
+    if check_stability
+        F = companion_matrix(B, n, p)
+        max_modulus = maximum(abs.(eigvals(F)))
+        if max_modulus >= one(T)
+            @warn "Estimated VAR is non-stationary (max eigenvalue modulus = $(round(max_modulus, digits=4))). " *
+                  "Consider differencing the data or using a VECM specification."
+        end
+    end
+
+    model
 end
 
 @float_fallback estimate_var Y
 
 """Estimate VAR from DataFrame. Use `vars` to select columns."""
-function estimate_var(df::DataFrame, p::Int; vars::Vector{Symbol}=Symbol[])
+function estimate_var(df::DataFrame, p::Int; vars::Vector{Symbol}=Symbol[], check_stability::Bool=true)
     data = isempty(vars) ? Matrix(df) : Matrix(df[:, vars])
-    estimate_var(Float64.(data), p)
+    estimate_var(Float64.(data), p; check_stability=check_stability)
 end
 
 # =============================================================================
