@@ -68,6 +68,10 @@ using Test
         include("test_lp.jl")
     end
 
+    @testset "ARIMA Models" begin
+        include("test_arima.jl")
+    end
+
     @testset "Utility Functions" begin
         include("test_utils.jl")
     end

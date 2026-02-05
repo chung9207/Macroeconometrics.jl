@@ -14,6 +14,7 @@ A Julia package for macroeconomic time series analysis, providing tools for:
   - Smooth IRF via B-splines (Barnichon & Brownlees 2019)
   - State-dependent LP (Auerbach & Gorodnichenko 2013)
   - Propensity Score Matching (Angrist et al. 2018)
+- ARIMA/ARMA model estimation, forecasting, and order selection
 - Generalized Method of Moments (GMM) estimation
 
 # Quick Start
@@ -59,6 +60,7 @@ using StatsAPI
 using StatsAPI: fit, coef, vcov, residuals, predict, r2, aic, bic, dof, dof_residual, nobs, loglikelihood, confint, stderror, islinear
 using Distributions
 using FFTW
+import Optim
 
 # =============================================================================
 # Include Source Files (Order Matters)
@@ -92,6 +94,13 @@ include("generalizedfactor.jl") # Generalized dynamic factor model (spectral)
 
 # GMM estimation (includes GMM types)
 include("gmm.jl")
+
+# ARIMA models (univariate time series)
+include("arima_types.jl")       # Type definitions (AbstractARIMAModel hierarchy)
+include("arima_kalman.jl")      # State-space form and Kalman filter for exact MLE
+include("arima_estimation.jl")  # OLS, CSS, MLE estimation for AR/MA/ARMA/ARIMA
+include("arima_forecast.jl")    # Multi-step forecasting with confidence intervals
+include("arima_selection.jl")   # Automatic order selection (AIC/BIC grid search)
 
 # Covariance estimators (shared by LP, GMM, etc.)
 include("covariance_estimators.jl")
@@ -308,6 +317,26 @@ export estimate_gmm, gmm_objective, gmm_summary
 export optimal_weighting_matrix, identity_weighting
 export j_test, numerical_gradient
 export estimate_lp_gmm, lp_gmm_moments
+
+# =============================================================================
+# Exports - ARIMA Models
+# =============================================================================
+
+# Abstract type
+export AbstractARIMAModel
+
+# Model types
+export ARModel, MAModel, ARMAModel, ARIMAModel
+export ARIMAForecast, ARIMAOrderSelection
+
+# Type accessors
+export ar_order, ma_order, diff_order
+
+# Estimation functions
+export estimate_ar, estimate_ma, estimate_arma, estimate_arima
+
+# Order selection
+export select_arima_order, auto_arima, ic_table
 
 # =============================================================================
 # Exports - StatsAPI Interface
