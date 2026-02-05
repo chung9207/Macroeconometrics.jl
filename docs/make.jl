@@ -13,11 +13,15 @@ makedocs(;
         canonical="https://chung9207.github.io/MacroEconometricModels.jl",
         edit_link="main",
         assets=String[],
+        size_threshold=300 * 1024,
         mathengine=Documenter.MathJax3(),
         repolink="https://github.com/chung9207/MacroEconometricModels.jl",
     ),
     pages=[
         "Home" => "index.md",
+        "Univariate Models" => [
+            "ARIMA" => "arima.md",
+        ],
         "Frequentist Models" => [
             "VAR" => "manual.md",
             "Local Projections" => "lp.md",

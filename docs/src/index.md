@@ -8,6 +8,7 @@
 
 ### Key Features
 
+- **ARIMA Models**: AR, MA, ARMA, and ARIMA estimation via OLS, CSS, MLE (Kalman filter), and CSS-MLE; automatic order selection; multi-step forecasting with confidence intervals
 - **Vector Autoregression (VAR)**: OLS estimation with comprehensive diagnostics, impulse response functions (IRFs), and forecast error variance decomposition (FEVD)
 - **Structural Identification**: Multiple identification schemes including Cholesky, sign restrictions, long-run (Blanchard-Quah), and narrative restrictions
 - **Bayesian VAR**: Minnesota/Litterman prior with automatic hyperparameter optimization via marginal likelihood (Giannone, Lenza & Primiceri, 2015)
@@ -131,6 +132,30 @@ Y = randn(200, 3)
 johansen_result = johansen_test(Y, 2; deterministic=:constant)
 ```
 
+### ARIMA Models
+
+```julia
+using MacroEconometricModels
+
+# Univariate time series
+y = randn(200)
+
+# Estimate AR(2) via OLS
+ar_model = estimate_ar(y, 2)
+
+# Estimate ARMA(1,1) via CSS-MLE
+arma_model = estimate_arma(y, 1, 1)
+
+# Automatic ARIMA order selection
+best = auto_arima(y)
+
+# Forecast 12 steps ahead with 95% confidence intervals
+fc = forecast(arma_model, 12)
+fc.forecast    # Point forecasts
+fc.ci_lower    # Lower bound
+fc.ci_upper    # Upper bound
+```
+
 ## Package Structure
 
 The package is organized into the following modules:
@@ -146,6 +171,11 @@ The package is organized into the following modules:
 | `fevd.jl` | Forecast error variance decomposition |
 | `hd.jl` | Historical decomposition |
 | `summary.jl` | Publication-quality summary tables |
+| `arima_types.jl` | ARIMA type definitions (AR, MA, ARMA, ARIMA models) |
+| `arima_kalman.jl` | State-space form and Kalman filter for exact MLE |
+| `arima_estimation.jl` | AR/MA/ARMA/ARIMA estimation (OLS, CSS, MLE, CSS-MLE) |
+| `arima_forecast.jl` | Multi-step forecasting with confidence intervals |
+| `arima_selection.jl` | Order selection (`select_arima_order`, `auto_arima`, `ic_table`) |
 | `lp_*.jl` | Local Projections suite |
 | `factormodels.jl` | Static, dynamic, and generalized dynamic factor models |
 | `unitroot.jl` | Unit root and cointegration tests (ADF, KPSS, PP, ZA, Ng-Perron, Johansen) |
@@ -170,6 +200,12 @@ Throughout this documentation, we use the following notation conventions:
 | ``H`` | Maximum horizon |
 
 ## References
+
+### Univariate Time Series
+
+- Box, G. E. P., & Jenkins, G. M. (1976). *Time Series Analysis: Forecasting and Control*. Holden-Day.
+- Brockwell, P. J., & Davis, R. A. (1991). *Time Series: Theory and Methods*. 2nd ed. Springer.
+- Harvey, A. C. (1993). *Time Series Models*. 2nd ed. MIT Press.
 
 ### Core Methodology
 
@@ -216,6 +252,6 @@ Contributions are welcome! Please see the [GitHub repository](https://github.com
 ## Contents
 
 ```@contents
-Pages = ["manual.md", "lp.md", "factormodels.md", "bayesian.md", "innovation_accounting.md", "hypothesis_tests.md", "api.md", "examples.md"]
+Pages = ["arima.md", "manual.md", "lp.md", "factormodels.md", "bayesian.md", "innovation_accounting.md", "hypothesis_tests.md", "api.md", "examples.md"]
 Depth = 2
 ```

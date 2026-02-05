@@ -10,6 +10,20 @@ MacroEconometricModels.MacroEconometricModels
 
 ---
 
+## ARIMA Models
+
+```@docs
+AbstractARIMAModel
+ARModel
+MAModel
+ARMAModel
+ARIMAModel
+ARIMAForecast
+ARIMAOrderSelection
+```
+
+---
+
 ## VAR Models
 
 ```@docs
@@ -111,6 +125,12 @@ AriasSVARResult
 ## Type Hierarchy
 
 ```
+AbstractARIMAModel <: StatsAPI.RegressionModel
+├── ARModel{T}
+├── MAModel{T}
+├── ARMAModel{T}
+└── ARIMAModel{T}
+
 AbstractVARModel
 └── VARModel{T}
 

@@ -9,7 +9,20 @@ The API documentation is organized into the following pages:
 
 ## Quick Reference Tables
 
-### Estimation Functions
+### ARIMA Estimation Functions
+
+| Function | Description |
+|----------|-------------|
+| `estimate_ar(y, p; method=:ols)` | AR(p) via OLS or MLE |
+| `estimate_ma(y, q; method=:css_mle)` | MA(q) via CSS, MLE, or CSS-MLE |
+| `estimate_arma(y, p, q; method=:css_mle)` | ARMA(p,q) via CSS, MLE, or CSS-MLE |
+| `estimate_arima(y, p, d, q; method=:css_mle)` | ARIMA(p,d,q) via differencing + ARMA |
+| `forecast(model, h; conf_level=0.95)` | Multi-step forecasting with confidence intervals |
+| `select_arima_order(y, max_p, max_q)` | Grid search for optimal ARMA order |
+| `auto_arima(y)` | Automatic ARIMA order selection |
+| `ic_table(y, max_p, max_q)` | Information criteria comparison table |
+
+### Multivariate Estimation Functions
 
 | Function | Description |
 |----------|-------------|

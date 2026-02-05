@@ -4,6 +4,35 @@ This page documents all functions in **MacroEconometricModels.jl**, organized by
 
 ---
 
+## ARIMA Models
+
+### Estimation
+
+```@docs
+estimate_ar
+estimate_ma
+estimate_arma
+estimate_arima
+```
+
+### Forecasting
+
+```@autodocs
+Modules = [MacroEconometricModels]
+Pages   = ["arima_forecast.jl"]
+Order   = [:function]
+```
+
+### Order Selection
+
+```@docs
+select_arima_order
+auto_arima
+ic_table
+```
+
+---
+
 ## VAR Estimation
 
 ### Frequentist Estimation
