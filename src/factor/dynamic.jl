@@ -18,6 +18,39 @@ using LinearAlgebra, Statistics, StatsAPI
 using Distributions: Normal, quantile
 
 # =============================================================================
+# Dynamic Factor Model Type
+# =============================================================================
+
+"""
+    DynamicFactorModel{T} <: AbstractFactorModel
+
+Dynamic factor model: Xₜ = Λ Fₜ + eₜ, Fₜ = Σᵢ Aᵢ Fₜ₋ᵢ + ηₜ.
+
+Fields: X, factors, loadings, A (VAR coefficients), factor_residuals, Sigma_eta, Sigma_e,
+eigenvalues, explained_variance, cumulative_variance, r, p, method, standardized,
+converged, iterations, loglik.
+"""
+struct DynamicFactorModel{T<:AbstractFloat} <: AbstractFactorModel
+    X::Matrix{T}
+    factors::Matrix{T}
+    loadings::Matrix{T}
+    A::Vector{Matrix{T}}
+    factor_residuals::Matrix{T}
+    Sigma_eta::Matrix{T}
+    Sigma_e::Matrix{T}
+    eigenvalues::Vector{T}
+    explained_variance::Vector{T}
+    cumulative_variance::Vector{T}
+    r::Int
+    p::Int
+    method::Symbol
+    standardized::Bool
+    converged::Bool
+    iterations::Int
+    loglik::T
+end
+
+# =============================================================================
 # Dynamic Factor Model Estimation
 # =============================================================================
 

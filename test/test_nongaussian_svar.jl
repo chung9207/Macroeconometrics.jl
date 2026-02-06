@@ -283,21 +283,21 @@ using StatsAPI
     @testset "compute_Q Integration" begin
         # Test that ICA methods work through compute_Q → irf pipeline
         for method in [:fastica, :jade, :sobi, :dcov, :hsic]
-            Q = compute_Q(model, method, 10, nothing, nothing)
+            Q = MacroEconometricModels.compute_Q(model, method, 10, nothing, nothing)
             @test size(Q) == (n, n)
             @test norm(Q' * Q - I) < 1e-4
         end
 
         # Non-Gaussian ML methods through compute_Q
         for method in [:student_t, :mixture_normal, :pml, :skew_normal]
-            Q = compute_Q(model, method, 10, nothing, nothing)
+            Q = MacroEconometricModels.compute_Q(model, method, 10, nothing, nothing)
             @test size(Q) == (n, n)
             @test norm(Q' * Q - I) < 1e-4
         end
 
         # Heteroskedasticity methods
         for method in [:markov_switching, :garch]
-            Q = compute_Q(model, method, 10, nothing, nothing)
+            Q = MacroEconometricModels.compute_Q(model, method, 10, nothing, nothing)
             @test size(Q) == (n, n)
         end
 

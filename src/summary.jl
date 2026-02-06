@@ -223,10 +223,7 @@ function table(irf::ImpulseResponse{T}, var::Int, shock::Int;
 end
 
 function table(irf::ImpulseResponse, var::String, shock::String; kwargs...)
-    vi = findfirst(==(var), irf.variables)
-    si = findfirst(==(shock), irf.shocks)
-    isnothing(vi) && throw(ArgumentError("Variable '$var' not found"))
-    isnothing(si) && throw(ArgumentError("Shock '$shock' not found"))
+    vi, si = _validate_var_shock_indices(var, shock, irf.variables, irf.shocks)
     table(irf, vi, si; kwargs...)
 end
 
@@ -255,10 +252,7 @@ function table(irf::BayesianImpulseResponse{T}, var::Int, shock::Int;
 end
 
 function table(irf::BayesianImpulseResponse, var::String, shock::String; kwargs...)
-    vi = findfirst(==(var), irf.variables)
-    si = findfirst(==(shock), irf.shocks)
-    isnothing(vi) && throw(ArgumentError("Variable '$var' not found"))
-    isnothing(si) && throw(ArgumentError("Shock '$shock' not found"))
+    vi, si = _validate_var_shock_indices(var, shock, irf.variables, irf.shocks)
     table(irf, vi, si; kwargs...)
 end
 
@@ -796,3 +790,345 @@ function print_table(io::IO, fc::LPForecast{T}) where {T}
 end
 
 print_table(fc::LPForecast) = print_table(stdout, fc)
+
+# =============================================================================
+# LP-FEVD Display (Gorodnichenko & Lee 2019)
+# =============================================================================
+
+function Base.show(io::IO, f::LPFEVD{T}) where {T}
+    n_vars, n_shocks, H = size(f.proportions)
+
+    method_str = f.method == :r2 ? "R²" : f.method == :lp_a ? "LP-A" : "LP-B"
+    bc_str = f.bias_correction ? "Yes (VAR bootstrap)" : "No"
+    spec_data = [
+        "Variables" n_vars;
+        "Shocks" n_shocks;
+        "Horizon" H;
+        "Estimator" method_str;
+        "Bias corrected" bc_str;
+        "Bootstrap reps" f.n_boot;
+        "Conf. level" _fmt_pct(f.conf_level)
+    ]
+    _pretty_table(io, spec_data;
+        title = "LP-FEVD (Gorodnichenko & Lee 2019)",
+        column_labels = ["", ""],
+        alignment = [:l, :r],
+    )
+
+    # Use bias-corrected values if available
+    vals = f.bias_correction ? f.bias_corrected : f.proportions
+
+    for h in _select_horizons(H)
+        data = Matrix{Any}(undef, n_vars, n_shocks + 1)
+        for i in 1:n_vars
+            data[i, 1] = "Var $i"
+            for j in 1:n_shocks
+                v = vals[i, j, h]
+                if f.n_boot > 0
+                    se = f.se[i, j, h]
+                    data[i, j + 1] = string(_fmt_pct(v), " (", _fmt(se), ")")
+                else
+                    data[i, j + 1] = _fmt_pct(v)
+                end
+            end
+        end
+
+        _pretty_table(io, data;
+            title = "h = $h",
+            column_labels = vcat([""], ["Shock $j" for j in 1:n_shocks]),
+            alignment = vcat([:l], fill(:r, n_shocks)),
+        )
+    end
+end
+
+"""
+    print_table([io], f::LPFEVD, var_idx; horizons=...)
+
+Print formatted LP-FEVD table for variable `var_idx`.
+"""
+function print_table(io::IO, f::LPFEVD{T}, var_idx::Int;
+                     horizons::Vector{Int}=collect(_select_horizons(f.horizon))) where {T}
+    n_shocks = size(f.proportions, 2)
+    H_sel = filter(h -> h <= f.horizon, horizons)
+
+    vals = f.bias_correction ? f.bias_corrected : f.proportions
+    header = vcat(["h"], ["Shock $j" for j in 1:n_shocks])
+
+    if f.n_boot > 0
+        # Include CIs
+        header_full = String["h"]
+        for j in 1:n_shocks
+            push!(header_full, "Shock $j")
+            push!(header_full, "CI_lo")
+            push!(header_full, "CI_hi")
+        end
+        data = Matrix{Any}(undef, length(H_sel), 1 + 3 * n_shocks)
+        for (i, h) in enumerate(H_sel)
+            data[i, 1] = h
+            for j in 1:n_shocks
+                col = 1 + (j - 1) * 3
+                data[i, col + 1] = _fmt(vals[var_idx, j, h])
+                data[i, col + 2] = _fmt(f.ci_lower[var_idx, j, h])
+                data[i, col + 3] = _fmt(f.ci_upper[var_idx, j, h])
+            end
+        end
+        _pretty_table(io, data;
+            title = "LP-FEVD: Variable $var_idx",
+            column_labels = header_full,
+            alignment = fill(:r, length(header_full)),
+        )
+    else
+        data = Matrix{Any}(undef, length(H_sel), 1 + n_shocks)
+        for (i, h) in enumerate(H_sel)
+            data[i, 1] = h
+            for j in 1:n_shocks
+                data[i, j + 1] = _fmt(vals[var_idx, j, h])
+            end
+        end
+        _pretty_table(io, data;
+            title = "LP-FEVD: Variable $var_idx",
+            column_labels = header,
+            alignment = fill(:r, length(header)),
+        )
+    end
+end
+
+print_table(f::LPFEVD, var_idx::Int; kwargs...) =
+    print_table(stdout, f, var_idx; kwargs...)
+
+# =============================================================================
+# Base.show Methods for LP Types
+# =============================================================================
+
+function Base.show(io::IO, m::LPModel)
+    cov_name = m.cov_estimator isa NeweyWestEstimator ? "Newey-West" :
+               m.cov_estimator isa WhiteEstimator ? "White (HC0)" : "Driscoll-Kraay"
+    data = Any[
+        "Variables" nvars(m);
+        "Shock variable" m.shock_var;
+        "Response variables" length(m.response_vars);
+        "Horizon" m.horizon;
+        "Lags" m.lags;
+        "Observations" size(m.Y, 1);
+        "Covariance" cov_name
+    ]
+    _pretty_table(io, data;
+        title = "Local Projection Model (Jordà 2005)",
+        column_labels = ["", ""],
+        alignment = [:l, :r],
+    )
+end
+
+function Base.show(io::IO, m::LPIVModel)
+    cov_name = m.cov_estimator isa NeweyWestEstimator ? "Newey-West" :
+               m.cov_estimator isa WhiteEstimator ? "White (HC0)" : "Driscoll-Kraay"
+    min_F = round(minimum(m.first_stage_F), digits=2)
+    max_F = round(maximum(m.first_stage_F), digits=2)
+    data = Any[
+        "Variables" nvars(m);
+        "Shock variable" m.shock_var;
+        "Instruments" n_instruments(m);
+        "Horizon" m.horizon;
+        "Lags" m.lags;
+        "Observations" size(m.Y, 1);
+        "First-stage F (min)" min_F;
+        "First-stage F (max)" max_F;
+        "Covariance" cov_name
+    ]
+    _pretty_table(io, data;
+        title = "LP-IV Model (Stock & Watson 2018)",
+        column_labels = ["", ""],
+        alignment = [:l, :r],
+    )
+end
+
+nvars(m::LPIVModel) = size(m.Y, 2)
+
+function Base.show(io::IO, m::SmoothLPModel)
+    cov_name = m.cov_estimator isa NeweyWestEstimator ? "Newey-West" :
+               m.cov_estimator isa WhiteEstimator ? "White (HC0)" : "Driscoll-Kraay"
+    data = Any[
+        "Variables" size(m.Y, 2);
+        "Shock variable" m.shock_var;
+        "Horizon" m.horizon;
+        "Lags" m.lags;
+        "Spline degree" m.spline_basis.degree;
+        "Interior knots" m.spline_basis.n_interior_knots;
+        "Lambda (penalty)" _fmt(m.lambda);
+        "Basis functions" n_basis(m.spline_basis);
+        "Observations" size(m.Y, 1);
+        "Covariance" cov_name
+    ]
+    _pretty_table(io, data;
+        title = "Smooth LP Model (Barnichon & Brownlees 2019)",
+        column_labels = ["", ""],
+        alignment = [:l, :r],
+    )
+end
+
+function Base.show(io::IO, m::StateLPModel)
+    cov_name = m.cov_estimator isa NeweyWestEstimator ? "Newey-West" :
+               m.cov_estimator isa WhiteEstimator ? "White (HC0)" : "Driscoll-Kraay"
+    pct_exp = round(mean(m.state.F_values) * 100, digits=1)
+    data = Any[
+        "Variables" size(m.Y, 2);
+        "Shock variable" m.shock_var;
+        "Horizon" m.horizon;
+        "Lags" m.lags;
+        "Transition" string(m.state.method);
+        "Gamma (smoothness)" _fmt(m.state.gamma);
+        "Threshold" _fmt(m.state.threshold);
+        "% in expansion" string(pct_exp, "%");
+        "Observations" size(m.Y, 1);
+        "Covariance" cov_name
+    ]
+    _pretty_table(io, data;
+        title = "State-Dependent LP Model (Auerbach & Gorodnichenko 2013)",
+        column_labels = ["", ""],
+        alignment = [:l, :r],
+    )
+end
+
+function Base.show(io::IO, m::PropensityLPModel)
+    cov_name = m.cov_estimator isa NeweyWestEstimator ? "Newey-West" :
+               m.cov_estimator isa WhiteEstimator ? "White (HC0)" : "Driscoll-Kraay"
+    n_t = n_treated(m)
+    n_c = n_control(m)
+    data = Any[
+        "Variables" size(m.Y, 2);
+        "Horizon" m.horizon;
+        "Treated" n_t;
+        "Control" n_c;
+        "Covariates" size(m.covariates, 2);
+        "PS method" string(m.config.method);
+        "Trimming" string(m.config.trimming);
+        "Observations" size(m.Y, 1);
+        "Covariance" cov_name
+    ]
+    _pretty_table(io, data;
+        title = "Propensity Score LP Model (Angrist et al. 2018)",
+        column_labels = ["", ""],
+        alignment = [:l, :r],
+    )
+end
+
+function Base.show(io::IO, irf::LPImpulseResponse)
+    ci_pct = round(irf.conf_level * 100, digits=0)
+    data = Any[
+        "Shock" irf.shock_var;
+        "Response variables" length(irf.response_vars);
+        "Horizon" irf.horizon;
+        "CI type" string(irf.cov_type);
+        "Confidence level" string(ci_pct, "%")
+    ]
+    _pretty_table(io, data;
+        title = "LP Impulse Response",
+        column_labels = ["", ""],
+        alignment = [:l, :r],
+    )
+end
+
+function Base.show(io::IO, b::BSplineBasis)
+    data = Any[
+        "Degree" b.degree;
+        "Interior knots" b.n_interior_knots;
+        "Basis functions" n_basis(b);
+        "Horizon range" string(minimum(b.horizons), ":", maximum(b.horizons))
+    ]
+    _pretty_table(io, data;
+        title = "B-Spline Basis",
+        column_labels = ["", ""],
+        alignment = [:l, :r],
+    )
+end
+
+function Base.show(io::IO, s::StateTransition)
+    pct_high = round(mean(s.F_values) * 100, digits=1)
+    data = Any[
+        "Transition" string(s.method);
+        "Gamma" _fmt(s.gamma);
+        "Threshold" _fmt(s.threshold);
+        "% in high state" string(pct_high, "%");
+        "Observations" length(s.state_var)
+    ]
+    _pretty_table(io, data;
+        title = "State Transition Function",
+        column_labels = ["", ""],
+        alignment = [:l, :r],
+    )
+end
+
+function Base.show(io::IO, c::PropensityScoreConfig)
+    data = Any[
+        "Method" string(c.method);
+        "Trimming" string(c.trimming);
+        "Normalize" c.normalize ? "Yes" : "No"
+    ]
+    _pretty_table(io, data;
+        title = "Propensity Score Configuration",
+        column_labels = ["", ""],
+        alignment = [:l, :r],
+    )
+end
+
+# =============================================================================
+# Base.show Methods for VAR/Identification Types
+# =============================================================================
+
+function Base.show(io::IO, h::MinnesotaHyperparameters)
+    data = Any[
+        "tau (tightness)" _fmt(h.tau);
+        "decay (lag decay)" _fmt(h.decay);
+        "lambda (sum-of-coef)" _fmt(h.lambda);
+        "mu (co-persistence)" _fmt(h.mu);
+        "omega (covariance)" _fmt(h.omega)
+    ]
+    _pretty_table(io, data;
+        title = "Minnesota Prior Hyperparameters",
+        column_labels = ["Parameter", "Value"],
+        alignment = [:l, :r],
+    )
+end
+
+function Base.show(io::IO, r::AriasSVARResult)
+    n_draws = length(r.Q_draws)
+    acc_pct = round(r.acceptance_rate * 100, digits=2)
+    n_zeros = length(r.restrictions.zeros)
+    n_signs = length(r.restrictions.signs)
+    data = Any[
+        "Accepted draws" n_draws;
+        "Acceptance rate" string(acc_pct, "%");
+        "Zero restrictions" n_zeros;
+        "Sign restrictions" n_signs;
+        "Variables" r.restrictions.n_vars;
+        "Shocks" r.restrictions.n_shocks
+    ]
+    _pretty_table(io, data;
+        title = "Arias et al. (2018) SVAR Result",
+        column_labels = ["", ""],
+        alignment = [:l, :r],
+    )
+end
+
+function Base.show(io::IO, r::ZeroRestriction)
+    print(io, "ZeroRestriction(var=$(r.variable), shock=$(r.shock), horizon=$(r.horizon))")
+end
+
+function Base.show(io::IO, r::SignRestriction)
+    sign_str = r.sign > 0 ? "+" : "-"
+    print(io, "SignRestriction(var=$(r.variable), shock=$(r.shock), horizon=$(r.horizon), sign=$(sign_str))")
+end
+
+function Base.show(io::IO, r::SVARRestrictions)
+    data = Any[
+        "Zero restrictions" length(r.zeros);
+        "Sign restrictions" length(r.signs);
+        "Variables" r.n_vars;
+        "Shocks" r.n_shocks
+    ]
+    _pretty_table(io, data;
+        title = "SVAR Restrictions",
+        column_labels = ["", ""],
+        alignment = [:l, :r],
+    )
+end

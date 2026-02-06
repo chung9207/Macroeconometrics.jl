@@ -465,7 +465,7 @@ using MacroEconometricModels
         # Get Cholesky IRF
         L = identify_cholesky(model)
         Q_chol = Matrix{Float64}(I, n, n)
-        irf_chol = compute_irf(model, Q_chol, 10)
+        irf_chol = MacroEconometricModels.compute_irf(model, Q_chol, 10)
 
         # Impact responses from Arias should match Cholesky structure
         # (lower triangular impact matrix)

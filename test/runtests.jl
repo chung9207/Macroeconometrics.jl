@@ -80,6 +80,10 @@ using Test
         include("test_lp_forecast.jl")
     end
 
+    @testset "LP-FEVD (Gorodnichenko & Lee 2019)" begin
+        include("test_lp_fevd.jl")
+    end
+
     @testset "ARIMA Models" begin
         include("test_arima.jl")
     end

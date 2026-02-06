@@ -18,7 +18,7 @@ Random.seed!(54321)
         q_vec = [0.16, 0.5, 0.84]
 
         # Test allocating version
-        q_out, m_out = compute_posterior_quantiles(samples, q_vec)
+        q_out, m_out = MacroEconometricModels.compute_posterior_quantiles(samples, q_vec)
 
         @test size(q_out) == (10, 3, 3, 3)  # (dims..., n_quantiles)
         @test size(m_out) == (10, 3, 3)
@@ -39,7 +39,7 @@ Random.seed!(54321)
         q_out = zeros(5, 2, 3)
         m_out = zeros(5, 2)
 
-        compute_posterior_quantiles!(q_out, m_out, samples, q_vec)
+        MacroEconometricModels.compute_posterior_quantiles!(q_out, m_out, samples, q_vec)
 
         @test size(q_out) == (5, 2, 3)
         @test size(m_out) == (5, 2)
@@ -57,12 +57,12 @@ Random.seed!(54321)
         q_out = zeros(10, 4, 4, 3)
         m_out = zeros(10, 4, 4)
 
-        compute_posterior_quantiles_threaded!(q_out, m_out, samples, q_vec)
+        MacroEconometricModels.compute_posterior_quantiles_threaded!(q_out, m_out, samples, q_vec)
 
         # Compare with non-threaded version
         q_out2 = zeros(10, 4, 4, 3)
         m_out2 = zeros(10, 4, 4)
-        compute_posterior_quantiles!(q_out2, m_out2, samples, q_vec)
+        MacroEconometricModels.compute_posterior_quantiles!(q_out2, m_out2, samples, q_vec)
 
         @test q_out ≈ q_out2
         @test m_out ≈ m_out2
@@ -72,7 +72,7 @@ Random.seed!(54321)
         # Create vector of result arrays
         results = [randn(5, 3, 3) for _ in 1:20]
 
-        stacked = stack_posterior_results(results, (5, 3, 3), Float64)
+        stacked = MacroEconometricModels.stack_posterior_results(results, (5, 3, 3), Float64)
 
         @test size(stacked) == (20, 5, 3, 3)
 
@@ -92,7 +92,7 @@ Random.seed!(54321)
         q_out = zeros(5, 2, 3)
         m_out = zeros(5, 2)
 
-        compute_weighted_quantiles!(q_out, m_out, samples, weights, q_vec)
+        MacroEconometricModels.compute_weighted_quantiles!(q_out, m_out, samples, weights, q_vec)
 
         @test size(q_out) == (5, 2, 3)
         @test size(m_out) == (5, 2)
@@ -108,7 +108,7 @@ Random.seed!(54321)
         residuals2 = randn(100)
 
         # Pre-compute XtX_inv
-        XtX_inv = precompute_XtX_inv(X)
+        XtX_inv = MacroEconometricModels.precompute_XtX_inv(X)
         @test size(XtX_inv) == (5, 5)
         @test issymmetric(XtX_inv) || norm(XtX_inv - XtX_inv') < 1e-10
 

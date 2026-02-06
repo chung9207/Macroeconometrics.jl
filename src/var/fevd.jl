@@ -53,35 +53,15 @@ Compute Bayesian FEVD from MCMC chain with posterior quantiles.
 Uses `process_posterior_samples` and `compute_posterior_quantiles` from bayesian_utils.jl.
 """
 # =============================================================================
-# Structural LP FEVD
+# Structural LP FEVD — see lp_fevd.jl (Gorodnichenko & Lee 2019)
 # =============================================================================
-
-"""
-    fevd(slp::StructuralLP{T}, horizon::Int) -> FEVD{T}
-
-Compute FEVD from structural LP impulse responses.
-
-LP IRF values at horizon h are the structural MA coefficients Θ_h,
-so FEVD computation is identical to the VAR case.
-
-# Arguments
-- `slp`: Structural LP result
-- `horizon`: Maximum FEVD horizon (capped at IRF horizon)
-"""
-function fevd(slp::StructuralLP{T}, horizon::Int) where {T<:AbstractFloat}
-    H = min(horizon, size(slp.irf.values, 1))
-    irfs = slp.irf.values[1:H, :, :]
-    n = size(irfs, 2)
-    decomp, props = _compute_fevd(irfs, n, H)
-    FEVD{T}(decomp, props)
-end
 
 function fevd(chain::Chains, p::Int, n::Int, horizon::Int;
     method::Symbol=:cholesky, data::AbstractMatrix=Matrix{Float64}(undef, 0, 0),
     check_func=nothing, narrative_check=nothing, quantiles::Vector{<:Real}=[0.16, 0.5, 0.84],
     threaded::Bool=false
 )
-    method == :narrative && isempty(data) && throw(ArgumentError("Narrative needs data"))
+    _validate_narrative_data(method, data)
 
     ET = isempty(data) ? Float64 : eltype(data)
 

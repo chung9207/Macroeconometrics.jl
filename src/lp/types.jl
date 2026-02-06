@@ -592,6 +592,49 @@ struct LPForecast{T<:AbstractFloat}
 end
 
 # =============================================================================
+# LP-FEVD Type (Gorodnichenko & Lee 2019)
+# =============================================================================
+
+"""
+    LPFEVD{T} <: AbstractFEVD
+
+LP-based Forecast Error Variance Decomposition (Gorodnichenko & Lee 2019).
+
+Uses R²-based estimator: regress estimated LP forecast errors on identified
+structural shocks to measure the share of forecast error variance attributable
+to each shock. Includes VAR-based bootstrap bias correction and CIs.
+
+# Fields
+- `proportions`: Raw FEVD estimates (n × n × H), `[i,j,h]` = share of
+  variable i's h-step forecast error variance due to shock j
+- `bias_corrected`: Bias-corrected FEVD (n × n × H)
+- `se`: Bootstrap standard errors (n × n × H)
+- `ci_lower`: Lower CI bounds (n × n × H)
+- `ci_upper`: Upper CI bounds (n × n × H)
+- `method`: Estimator (:r2, :lp_a, :lp_b)
+- `horizon`: Maximum FEVD horizon
+- `n_boot`: Number of bootstrap replications used
+- `conf_level`: Confidence level for CIs
+- `bias_correction`: Whether bias correction was applied
+
+# Reference
+Gorodnichenko, Y. & Lee, B. (2019). "Forecast Error Variance Decompositions
+with Local Projections." *JBES*, 38(4), 921–933.
+"""
+struct LPFEVD{T<:AbstractFloat} <: AbstractFEVD
+    proportions::Array{T,3}
+    bias_corrected::Array{T,3}
+    se::Array{T,3}
+    ci_lower::Array{T,3}
+    ci_upper::Array{T,3}
+    method::Symbol
+    horizon::Int
+    n_boot::Int
+    conf_level::T
+    bias_correction::Bool
+end
+
+# =============================================================================
 # StatsAPI Interface for LP Models
 # =============================================================================
 

@@ -108,7 +108,7 @@ function irf(chain::Chains, p::Int, n::Int, horizon::Int;
     check_func=nothing, narrative_check=nothing, quantiles::Vector{<:Real}=[0.16, 0.5, 0.84],
     threaded::Bool=false
 )
-    method == :narrative && isempty(data) && throw(ArgumentError("Narrative needs data"))
+    _validate_narrative_data(method, data)
 
     ET = isempty(data) ? Float64 : eltype(data)
 

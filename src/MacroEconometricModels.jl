@@ -66,67 +66,83 @@ import Optim
 # Include Source Files (Order Matters)
 # =============================================================================
 
-# Core utilities (no dependencies on other package files)
-include("utils.jl")
+# Core infrastructure
+include("core/utils.jl")
+include("core/types.jl")
+include("core/display.jl")
 
-# Type definitions (depends on utils.jl for some functions)
-include("types.jl")
+# VAR types and estimation
+include("var/types.jl")
+include("var/estimation.jl")
 
-# Shared PrettyTables formatting (before any file that uses display helpers)
-include("display_utils.jl")
+# Bayesian estimation
+include("bvar/priors.jl")
+include("bvar/estimation.jl")
 
-# Estimation modules
-include("estimation.jl")
-include("priors.jl")
-include("bayesian.jl")
+# Unit root tests
+include("unitroot/types.jl")
+include("unitroot/critical_values.jl")
+include("unitroot/helpers.jl")
+include("unitroot/adf.jl")
+include("unitroot/kpss.jl")
+include("unitroot/pp.jl")
+include("unitroot/za.jl")
+include("unitroot/ngperron.jl")
+include("unitroot/johansen.jl")
+include("unitroot/stationarity.jl")
+include("unitroot/convenience.jl")
+include("unitroot/show.jl")
 
-# Unit root tests and stationarity diagnostics
-include("unitroot.jl")
+# Structural identification
+include("var/identification.jl")
 
-# Structural analysis
-include("identification.jl")
+# Non-Gaussian identification
+include("nongaussian/normality.jl")
+include("nongaussian/ica.jl")
+include("nongaussian/ml.jl")
+include("nongaussian/heteroskedastic.jl")
+include("nongaussian/tests.jl")
 
-# Non-Gaussian VAR identification and testing
-include("normality_tests.jl")       # Multivariate normality diagnostics
-include("nongaussian_ica.jl")       # ICA-based SVAR identification
-include("nongaussian_ml.jl")        # Non-Gaussian ML SVAR estimation
-include("heteroskedastic_id.jl")    # Heteroskedasticity-based identification
-include("nongaussian_tests.jl")     # Identifiability and specification tests
+# Bayesian utilities (after bayesian + identification)
+include("bvar/utils.jl")
 
-# Bayesian processing utilities (after bayesian.jl and identification.jl)
-include("bayesian_utils.jl")
+# Factor models
+include("factor/kalman.jl")
+include("factor/static.jl")
+include("factor/dynamic.jl")
+include("factor/generalized.jl")
 
-# Factor models (split into separate files for modularity)
-include("kalman.jl")           # Kalman filter/smoother utilities
-include("staticfactor.jl")     # Static factor model (PCA)
-include("dynamicfactor.jl")    # Dynamic factor model with EM
-include("generalizedfactor.jl") # Generalized dynamic factor model (spectral)
+# GMM
+include("gmm/gmm.jl")
 
-# GMM estimation (includes GMM types)
-include("gmm.jl")
+# ARIMA
+include("arima/types.jl")
+include("arima/kalman.jl")
+include("arima/estimation.jl")
+include("arima/forecast.jl")
+include("arima/selection.jl")
 
-# ARIMA models (univariate time series)
-include("arima_types.jl")       # Type definitions (AbstractARIMAModel hierarchy)
-include("arima_kalman.jl")      # State-space form and Kalman filter for exact MLE
-include("arima_estimation.jl")  # OLS, CSS, MLE estimation for AR/MA/ARMA/ARIMA
-include("arima_forecast.jl")    # Multi-step forecasting with confidence intervals
-include("arima_selection.jl")   # Automatic order selection (AIC/BIC grid search)
+# Covariance estimators
+include("core/covariance.jl")
 
-# Covariance estimators (shared by LP, GMM, etc.)
-include("covariance_estimators.jl")
+# Local Projections
+include("lp/types.jl")
+include("lp/core.jl")
+include("lp/iv.jl")
+include("lp/smooth.jl")
+include("lp/state.jl")
+include("lp/propensity.jl")
+include("lp/forecast.jl")
 
-# Local Projections (consolidated structure)
-include("lp_types.jl")      # LP type definitions
-include("lp_core.jl")       # Core LP estimation + shared utilities
-include("lp_extensions.jl") # LP-IV, Smooth LP, State LP, Propensity LP
-include("lp_forecast.jl")   # LP forecasting
+# Innovation accounting (after LP types for lp_irf support)
+include("var/irf.jl")
+include("var/fevd.jl")
+include("var/hd.jl")
 
-# IRF and FEVD (after LP types for lp_irf support)
-include("irf.jl")
-include("fevd.jl")
-include("hd.jl")
+# LP-FEVD (after irf + fevd)
+include("lp/fevd.jl")
 
-# Publication-quality summary tables (after all result types defined)
+# Display (after all types)
 include("summary.jl")
 
 # =============================================================================
@@ -144,7 +160,7 @@ export VARModel
 export ImpulseResponse, BayesianImpulseResponse
 
 # FEVD types
-export FEVD, BayesianFEVD
+export FEVD, BayesianFEVD, LPFEVD
 
 # Prior types
 export MinnesotaHyperparameters
@@ -194,17 +210,8 @@ export select_lag_order
 # =============================================================================
 
 export estimate_bvar
-export extract_chain_parameters
-export parameters_to_model
 export posterior_mean_model
 export posterior_median_model
-
-# Bayesian processing utilities
-export process_posterior_samples
-export compute_posterior_quantiles, compute_posterior_quantiles!
-export compute_posterior_quantiles_threaded!
-export compute_weighted_quantiles!, compute_weighted_quantiles_threaded!
-export stack_posterior_results
 
 # =============================================================================
 # Exports - Prior Functions
@@ -224,8 +231,6 @@ export identify_sign
 export identify_narrative
 export identify_long_run
 export generate_Q
-export compute_Q
-export compute_irf
 export compute_structural_shocks
 
 # Arias et al. (2018) SVAR identification
@@ -240,6 +245,7 @@ export irf_percentiles, irf_mean
 
 export irf
 export fevd
+export lp_fevd
 
 # =============================================================================
 # Exports - Historical Decomposition
@@ -302,12 +308,12 @@ export estimate_lp_multi, estimate_lp_cholesky, compare_var_lp
 export structural_lp
 
 # HAC covariance estimators
-export newey_west, white_vcov, driscoll_kraay, optimal_bandwidth_nw, kernel_weight
-export robust_vcov, long_run_variance, long_run_covariance, precompute_XtX_inv
+export newey_west, white_vcov, driscoll_kraay, optimal_bandwidth_nw
+export robust_vcov, long_run_variance, long_run_covariance
 
 # LP-IV (Stock & Watson 2018)
 export estimate_lp_iv, lp_iv_irf
-export first_stage_regression, weak_instrument_test, sargan_test
+export weak_instrument_test, sargan_test
 
 # Smooth LP (Barnichon & Brownlees 2019)
 export estimate_smooth_lp, smooth_lp_irf

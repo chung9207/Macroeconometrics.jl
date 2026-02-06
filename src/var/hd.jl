@@ -296,7 +296,7 @@ function historical_decomposition(chain::Chains, p::Int, n::Int, horizon::Int;
     quantiles::Vector{<:Real}=[0.16, 0.5, 0.84],
     check_func=nothing, narrative_check=nothing
 )
-    method == :narrative && isempty(data) && throw(ArgumentError("Narrative method requires data"))
+    _validate_narrative_data(method, data)
 
     samples = size(chain, 1)
     ET = eltype(data)

@@ -168,6 +168,26 @@ function univariate_ar_variance(y::AbstractVector{T}) where {T<:AbstractFloat}
 end
 
 # =============================================================================
+# Compound Validation Helpers
+# =============================================================================
+
+"""Resolve variable/shock names to indices, throwing on invalid names."""
+function _validate_var_shock_indices(var::String, shock::String,
+                                     variables::Vector{String}, shocks::Vector{String})
+    vi = findfirst(==(var), variables)
+    si = findfirst(==(shock), shocks)
+    isnothing(vi) && throw(ArgumentError("Variable '$var' not found"))
+    isnothing(si) && throw(ArgumentError("Shock '$shock' not found"))
+    (vi, si)
+end
+
+"""Validate that narrative method has required data matrix."""
+function _validate_narrative_data(method::Symbol, data::AbstractMatrix)
+    method == :narrative && isempty(data) &&
+        throw(ArgumentError("Narrative method requires data matrix"))
+end
+
+# =============================================================================
 # Name Generation
 # =============================================================================
 

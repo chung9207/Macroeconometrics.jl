@@ -11,6 +11,28 @@ References:
 using LinearAlgebra, Statistics, StatsAPI
 
 # =============================================================================
+# Factor Model Type
+# =============================================================================
+
+"""
+    FactorModel{T} <: AbstractFactorModel
+
+Static factor model via PCA: Xₜ = Λ Fₜ + eₜ.
+
+Fields: X, factors, loadings, eigenvalues, explained_variance, cumulative_variance, r, standardized.
+"""
+struct FactorModel{T<:AbstractFloat} <: AbstractFactorModel
+    X::Matrix{T}
+    factors::Matrix{T}
+    loadings::Matrix{T}
+    eigenvalues::Vector{T}
+    explained_variance::Vector{T}
+    cumulative_variance::Vector{T}
+    r::Int
+    standardized::Bool
+end
+
+# =============================================================================
 # Static Factor Model Estimation
 # =============================================================================
 

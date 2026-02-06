@@ -80,9 +80,9 @@ using Random
         @test bw < T
 
         # Test kernel weights
-        @test kernel_weight(0, 5, :bartlett) == 1.0
-        @test kernel_weight(5, 5, :bartlett) ≈ 1 - 5/6
-        @test kernel_weight(10, 5, :bartlett) == 0.0
+        @test MacroEconometricModels.kernel_weight(0, 5, :bartlett) == 1.0
+        @test MacroEconometricModels.kernel_weight(5, 5, :bartlett) ≈ 1 - 5/6
+        @test MacroEconometricModels.kernel_weight(10, 5, :bartlett) == 0.0
     end
 
     @testset "LP-IV (Stock & Watson 2018)" begin
@@ -747,17 +747,17 @@ using Random
 
     @testset "Kernel Weight Functions" begin
         # Test different kernel types
-        @test kernel_weight(0, 10, :bartlett) == 1.0
-        @test kernel_weight(10, 10, :bartlett) ≈ 1 - 10/11
-        @test kernel_weight(15, 10, :bartlett) == 0.0
+        @test MacroEconometricModels.kernel_weight(0, 10, :bartlett) == 1.0
+        @test MacroEconometricModels.kernel_weight(10, 10, :bartlett) ≈ 1 - 10/11
+        @test MacroEconometricModels.kernel_weight(15, 10, :bartlett) == 0.0
 
-        @test kernel_weight(0, 10, :parzen) == 1.0
-        @test kernel_weight(15, 10, :parzen) == 0.0
+        @test MacroEconometricModels.kernel_weight(0, 10, :parzen) == 1.0
+        @test MacroEconometricModels.kernel_weight(15, 10, :parzen) == 0.0
 
-        @test kernel_weight(0, 10, :quadratic_spectral) == 1.0
+        @test MacroEconometricModels.kernel_weight(0, 10, :quadratic_spectral) == 1.0
         # Quadratic spectral kernel decays but doesn't necessarily hit zero
 
-        @test kernel_weight(0, 10, :tukey_hanning) == 1.0
+        @test MacroEconometricModels.kernel_weight(0, 10, :tukey_hanning) == 1.0
     end
 
     @testset "LP with Different Covariance Types" begin

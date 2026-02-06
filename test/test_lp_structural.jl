@@ -121,23 +121,18 @@ using Statistics
     end
 
     # =========================================================================
-    @testset "fevd from structural LP" begin
+    @testset "fevd from structural LP (GL2019)" begin
         slp = structural_lp(Y, 12; method=:cholesky, lags=4)
 
-        f = fevd(slp, 12)
-        @test f isa FEVD{Float64}
+        f = fevd(slp, 12; n_boot=0)
+        @test f isa LPFEVD{Float64}
         @test size(f.proportions) == (n, n, 12)
 
-        # Proportions should sum to ~1 at each horizon for each variable
-        for h in 1:12, i in 1:n
-            @test sum(f.proportions[i, :, h]) ≈ 1.0 atol=1e-10
-        end
-
-        # All proportions should be non-negative
-        @test all(f.proportions .>= -1e-10)
+        # R² proportions should be in [0, 1]
+        @test all(0 .<= f.proportions .<= 1)
 
         # Test with shorter horizon
-        f_short = fevd(slp, 4)
+        f_short = fevd(slp, 4; n_boot=0)
         @test size(f_short.proportions) == (n, n, 4)
     end
 

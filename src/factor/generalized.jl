@@ -17,6 +17,37 @@ References:
 using LinearAlgebra, Statistics, FFTW, StatsAPI
 
 # =============================================================================
+# Generalized Dynamic Factor Model Type
+# =============================================================================
+
+"""
+    GeneralizedDynamicFactorModel{T} <: AbstractFactorModel
+
+GDFM with frequency-dependent loadings: Xₜ = χₜ + ξₜ.
+
+Fields: X, factors, common_component, idiosyncratic, loadings_spectral,
+spectral_density_X, spectral_density_chi, eigenvalues_spectral, frequencies,
+q (dynamic factors), r (static factors), bandwidth, kernel, standardized, variance_explained.
+"""
+struct GeneralizedDynamicFactorModel{T<:AbstractFloat} <: AbstractFactorModel
+    X::Matrix{T}
+    factors::Matrix{T}
+    common_component::Matrix{T}
+    idiosyncratic::Matrix{T}
+    loadings_spectral::Array{Complex{T},3}
+    spectral_density_X::Array{Complex{T},3}
+    spectral_density_chi::Array{Complex{T},3}
+    eigenvalues_spectral::Matrix{T}
+    frequencies::Vector{T}
+    q::Int
+    r::Int
+    bandwidth::Int
+    kernel::Symbol
+    standardized::Bool
+    variance_explained::Vector{T}
+end
+
+# =============================================================================
 # GDFM Estimation
 # =============================================================================
 

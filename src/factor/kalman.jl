@@ -7,6 +7,51 @@ These utilities are used by the dynamic factor model estimation.
 using LinearAlgebra
 
 # =============================================================================
+# Factor Model Forecast Result
+# =============================================================================
+
+"""
+    FactorForecast{T<:AbstractFloat}
+
+Result of factor model forecasting with optional confidence intervals.
+
+Fields: factors, observables, factors_lower, factors_upper, observables_lower, observables_upper,
+factors_se, observables_se, horizon, conf_level, ci_method.
+
+When `ci_method == :none`, CI and SE fields are zero matrices.
+"""
+struct FactorForecast{T<:AbstractFloat}
+    factors::Matrix{T}            # h × r factor forecasts
+    observables::Matrix{T}        # h × N observable forecasts
+    factors_lower::Matrix{T}      # h × r lower CI for factors
+    factors_upper::Matrix{T}      # h × r upper CI for factors
+    observables_lower::Matrix{T}  # h × N lower CI for observables
+    observables_upper::Matrix{T}  # h × N upper CI for observables
+    factors_se::Matrix{T}         # h × r standard errors for factors
+    observables_se::Matrix{T}     # h × N standard errors for observables
+    horizon::Int
+    conf_level::T
+    ci_method::Symbol             # :none, :theoretical, :bootstrap, :simulation
+end
+
+function Base.show(io::IO, fc::FactorForecast{T}) where {T}
+    h, r = size(fc.factors)
+    N = size(fc.observables, 2)
+    ci_str = fc.ci_method == :none ? "none" : "$(fc.ci_method) ($(round(100*fc.conf_level, digits=1))%)"
+    data = Any[
+        "Horizon"     h;
+        "Factors"     r;
+        "Observables" N;
+        "CI method"   ci_str
+    ]
+    _pretty_table(io, data;
+        title = "Factor Forecast",
+        column_labels = ["", ""],
+        alignment = [:l, :r],
+    )
+end
+
+# =============================================================================
 # Shared Utilities
 # =============================================================================
 
