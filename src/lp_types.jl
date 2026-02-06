@@ -502,6 +502,94 @@ end
 n_treated(model::PropensityLPModel) = sum(model.treatment)
 n_control(model::PropensityLPModel) = sum(.!model.treatment)
 
+# =============================================================================
+# Structural LP Type (Plagborg-Møller & Wolf 2021)
+# =============================================================================
+
+"""
+    StructuralLP{T} <: AbstractFrequentistResult
+
+Structural Local Projection result combining VAR-based identification with LP estimation.
+
+Estimates multi-shock IRFs by computing orthogonalized structural shocks from a VAR model
+and using them as regressors in LP regressions (Plagborg-Møller & Wolf 2021).
+
+Fields:
+- `irf`: 3D impulse responses (H × n × n) — reuses `ImpulseResponse{T}`
+- `structural_shocks`: Structural shocks (T_eff × n)
+- `var_model`: Underlying VAR model used for identification
+- `Q`: Rotation/identification matrix
+- `method`: Identification method used (:cholesky, :sign, :long_run, :fastica, etc.)
+- `lags`: Number of LP control lags
+- `cov_type`: HAC estimator type
+- `se`: Standard errors (H × n × n)
+- `lp_models`: Individual LP model per shock
+"""
+struct StructuralLP{T<:AbstractFloat} <: AbstractFrequentistResult
+    irf::ImpulseResponse{T}
+    structural_shocks::Matrix{T}
+    var_model::VARModel{T}
+    Q::Matrix{T}
+    method::Symbol
+    lags::Int
+    cov_type::Symbol
+    se::Array{T,3}
+    lp_models::Vector{LPModel{T}}
+end
+
+# Accessors
+nvars(slp::StructuralLP) = nvars(slp.var_model)
+
+# =============================================================================
+# LP Forecast Type
+# =============================================================================
+
+"""
+    LPForecast{T}
+
+Direct multi-step LP forecast result.
+
+Each horizon h uses its own regression coefficients directly (no recursion),
+producing ŷ_{T+h} = α_h + β_h·shock_h + Γ_h·controls_T.
+
+Fields:
+- `forecasts`: Point forecasts (H × n_response)
+- `ci_lower`: Lower CI bounds (H × n_response)
+- `ci_upper`: Upper CI bounds (H × n_response)
+- `se`: Standard errors (H × n_response)
+- `horizon`: Maximum forecast horizon
+- `response_vars`: Response variable indices
+- `shock_var`: Shock variable index
+- `shock_path`: Assumed shock trajectory
+- `conf_level`: Confidence level
+- `ci_method`: CI method (:analytical, :bootstrap, :none)
+"""
+struct LPForecast{T<:AbstractFloat}
+    forecasts::Matrix{T}
+    ci_lower::Matrix{T}
+    ci_upper::Matrix{T}
+    se::Matrix{T}
+    horizon::Int
+    response_vars::Vector{Int}
+    shock_var::Int
+    shock_path::Vector{T}
+    conf_level::T
+    ci_method::Symbol
+
+    function LPForecast(forecasts::Matrix{T}, ci_lower::Matrix{T}, ci_upper::Matrix{T},
+                        se::Matrix{T}, horizon::Int, response_vars::Vector{Int},
+                        shock_var::Int, shock_path::Vector{T}, conf_level::T,
+                        ci_method::Symbol) where {T<:AbstractFloat}
+        @assert size(forecasts) == size(ci_lower) == size(ci_upper) == size(se)
+        @assert size(forecasts, 1) == horizon
+        @assert size(forecasts, 2) == length(response_vars)
+        @assert length(shock_path) == horizon
+        @assert 0 < conf_level < 1
+        @assert ci_method ∈ (:analytical, :bootstrap, :none)
+        new{T}(forecasts, ci_lower, ci_upper, se, horizon, response_vars,
+               shock_var, shock_path, conf_level, ci_method)
+    end
+end
 
 # =============================================================================
 # StatsAPI Interface for LP Models

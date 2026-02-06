@@ -332,11 +332,10 @@ function _show_arima_model(io::IO, header::String, m::AbstractARIMAModel;
     end
     push!(rows, ["σ²", _fmt(m.sigma2)])
     data = reduce(vcat, permutedims.(rows))
-    pretty_table(io, data;
+    _pretty_table(io, data;
         title = header,
         column_labels = ["Parameter", "Estimate"],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
 
     # Fit statistics table
@@ -347,10 +346,9 @@ function _show_arima_model(io::IO, header::String, m::AbstractARIMAModel;
         "Method"         string(m.method);
         "Converged"      string(m.converged)
     ]
-    pretty_table(io, fit_data;
+    _pretty_table(io, fit_data;
         column_labels = ["Fit", "Value"],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
 end
 
@@ -377,11 +375,10 @@ function Base.show(io::IO, f::ARIMAForecast)
         data[nrows, 3] = ""
         data[nrows, 4] = ""
     end
-    pretty_table(io, data;
+    _pretty_table(io, data;
         title = "ARIMA Forecast (h=$h, $(ci_pct)% CI)",
         column_labels = ["h", "Forecast", "Lower", "Upper"],
         alignment = [:r, :r, :r, :r],
-        table_format = _TABLE_FORMAT
     )
 end
 
@@ -392,10 +389,9 @@ function Base.show(io::IO, r::ARIMAOrderSelection)
         "AIC" r.best_p_aic r.best_q_aic aic_val;
         "BIC" r.best_p_bic r.best_q_bic bic_val
     ]
-    pretty_table(io, data;
+    _pretty_table(io, data;
         title = "ARIMA Order Selection",
         column_labels = ["Criterion", "p", "q", "Value"],
         alignment = [:l, :r, :r, :r],
-        table_format = _TABLE_FORMAT
     )
 end

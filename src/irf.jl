@@ -131,6 +131,17 @@ function irf(chain::Chains, p::Int, n::Int, horizon::Int;
 end
 
 # =============================================================================
+# Structural LP IRF Accessor
+# =============================================================================
+
+"""
+    irf(slp::StructuralLP) -> ImpulseResponse
+
+Extract the impulse response object from a structural LP result.
+"""
+irf(slp::StructuralLP) = slp.irf
+
+# =============================================================================
 # Local Projection IRF
 # =============================================================================
 

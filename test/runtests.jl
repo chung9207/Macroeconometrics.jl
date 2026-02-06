@@ -72,6 +72,14 @@ using Test
         include("test_lp.jl")
     end
 
+    @testset "Structural LP" begin
+        include("test_lp_structural.jl")
+    end
+
+    @testset "LP Forecasting" begin
+        include("test_lp_forecast.jl")
+    end
+
     @testset "ARIMA Models" begin
         include("test_arima.jl")
     end
@@ -102,5 +110,9 @@ using Test
 
     @testset "Non-Gaussian SVAR Identification" begin
         include("test_nongaussian_svar.jl")
+    end
+
+    @testset "Display Backend Switching" begin
+        include("test_display_backends.jl")
     end
 end

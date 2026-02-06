@@ -71,11 +71,10 @@ function Base.show(io::IO, m::FactorModel{T}) where {T}
         "Observations"  Tobs;
         "Standardized"  m.standardized ? "Yes" : "No"
     ]
-    pretty_table(io, spec;
+    _pretty_table(io, spec;
         title = "Static Factor Model (r=$(m.r))",
         column_labels = ["Specification", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
     # Variance explained
     n_show = min(m.r, 5)
@@ -85,11 +84,10 @@ function Base.show(io::IO, m::FactorModel{T}) where {T}
         var_data[i, 2] = _fmt_pct(m.explained_variance[i])
         var_data[i, 3] = _fmt_pct(m.cumulative_variance[i])
     end
-    pretty_table(io, var_data;
+    _pretty_table(io, var_data;
         title = "Variance Explained",
         column_labels = ["", "Variance", "Cumulative"],
         alignment = [:l, :r, :r],
-        table_format = _TABLE_FORMAT
     )
 end
 

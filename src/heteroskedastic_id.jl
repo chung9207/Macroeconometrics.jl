@@ -58,11 +58,10 @@ function Base.show(io::IO, r::MarkovSwitchingSVARResult{T}) where {T}
         "Converged"  r.converged ? "Yes" : "No";
         "Iterations" r.iterations
     ]
-    pretty_table(io, spec;
+    _pretty_table(io, spec;
         title = "Markov-Switching SVAR Identification Result",
         column_labels = ["", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
     _matrix_table(io, r.B0, "Structural Impact Matrix (B₀)";
         row_labels=["Var $i" for i in 1:n],
@@ -103,11 +102,10 @@ function Base.show(io::IO, r::GARCHSVARResult{T}) where {T}
         "Converged"      r.converged ? "Yes" : "No";
         "Iterations"     r.iterations
     ]
-    pretty_table(io, spec;
+    _pretty_table(io, spec;
         title = "GARCH-SVAR Identification Result",
         column_labels = ["", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
     # GARCH parameters table
     garch_data = Matrix{Any}(undef, n, 4)
@@ -117,11 +115,10 @@ function Base.show(io::IO, r::GARCHSVARResult{T}) where {T}
         garch_data[i, 3] = _fmt(r.garch_params[i, 2])
         garch_data[i, 4] = _fmt(r.garch_params[i, 3])
     end
-    pretty_table(io, garch_data;
+    _pretty_table(io, garch_data;
         title = "GARCH Parameters",
         column_labels = ["", "ω", "α", "β"],
         alignment = [:l, :r, :r, :r],
-        table_format = _TABLE_FORMAT
     )
     _matrix_table(io, r.B0, "Structural Impact Matrix (B₀)";
         row_labels=["Var $i" for i in 1:n],
@@ -170,11 +167,10 @@ function Base.show(io::IO, r::SmoothTransitionSVARResult{T}) where {T}
         "Converged"      r.converged ? "Yes" : "No";
         "Iterations"     r.iterations
     ]
-    pretty_table(io, spec;
+    _pretty_table(io, spec;
         title = "Smooth-Transition SVAR Identification Result",
         column_labels = ["", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
     _matrix_table(io, r.B0, "Structural Impact Matrix (B₀)";
         row_labels=["Var $i" for i in 1:n],
@@ -211,11 +207,10 @@ function Base.show(io::IO, r::ExternalVolatilitySVARResult{T}) where {T}
         "Regimes"        K;
         "Log-likelihood" _fmt(r.loglik; digits=2)
     ]
-    pretty_table(io, spec;
+    _pretty_table(io, spec;
         title = "External Volatility SVAR Identification Result",
         column_labels = ["", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
     _matrix_table(io, r.B0, "Structural Impact Matrix (B₀)";
         row_labels=["Var $i" for i in 1:n],

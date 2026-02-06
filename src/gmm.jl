@@ -112,11 +112,10 @@ function Base.show(io::IO, m::GMMModel{T}) where {T}
         "Converged"   m.converged ? "Yes" : "No";
         "Iterations"  m.iterations
     ]
-    pretty_table(io, spec;
+    _pretty_table(io, spec;
         title = "GMM Estimation Result",
         column_labels = ["", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
     # Coefficient table
     se = sqrt.(max.(diag(m.vcov), zero(T)))
@@ -129,11 +128,10 @@ function Base.show(io::IO, m::GMMModel{T}) where {T}
         coef_data[i, 3] = _fmt(se[i])
         coef_data[i, 4] = isnan(t_stat) ? "—" : string(_fmt(t_stat))
     end
-    pretty_table(io, coef_data;
+    _pretty_table(io, coef_data;
         title = "Coefficients",
         column_labels = ["", "Estimate", "Std. Error", "t-stat"],
         alignment = [:l, :r, :r, :r],
-        table_format = _TABLE_FORMAT
     )
     # J-test
     if is_overidentified(m)
@@ -142,11 +140,10 @@ function Base.show(io::IO, m::GMMModel{T}) where {T}
             "P-value"     _format_pvalue(m.J_pvalue);
             "DF"          overid_df(m)
         ]
-        pretty_table(io, j_data;
+        _pretty_table(io, j_data;
             title = "Hansen J-test",
             column_labels = ["", ""],
             alignment = [:l, :r],
-            table_format = _TABLE_FORMAT
         )
     end
 end

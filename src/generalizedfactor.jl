@@ -92,11 +92,10 @@ function Base.show(io::IO, m::GeneralizedDynamicFactorModel{T}) where {T}
         "Bandwidth"        m.bandwidth;
         "Standardized"     m.standardized ? "Yes" : "No"
     ]
-    pretty_table(io, spec;
+    _pretty_table(io, spec;
         title = "Generalized Dynamic Factor Model (q=$(m.q), r=$(m.r))",
         column_labels = ["Specification", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
     n_show = min(m.r, 5)
     var_data = Matrix{Any}(undef, n_show, 2)
@@ -104,11 +103,10 @@ function Base.show(io::IO, m::GeneralizedDynamicFactorModel{T}) where {T}
         var_data[i, 1] = "Factor $i"
         var_data[i, 2] = _fmt_pct(m.variance_explained[i])
     end
-    pretty_table(io, var_data;
+    _pretty_table(io, var_data;
         title = "Variance Explained",
         column_labels = ["", "Variance"],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
 end
 

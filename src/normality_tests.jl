@@ -52,11 +52,10 @@ function Base.show(io::IO, r::NormalityTestResult{T}) where {T}
         "Variables"          r.n_vars;
         "Observations"       r.n_obs
     ]
-    pretty_table(io, data;
+    _pretty_table(io, data;
         title = "Normality Test: $(r.test_name)",
         column_labels = ["", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
 end
 
@@ -89,11 +88,10 @@ function Base.show(io::IO, s::NormalityTestSuite{T}) where {T}
         data[i, 3] = _format_pvalue(r.pvalue)
         data[i, 4] = r.pvalue < 0.05 ? "Reject" : "Fail to reject"
     end
-    pretty_table(io, data;
+    _pretty_table(io, data;
         title = "Multivariate Normality Test Suite (n=$(s.n_obs), k=$(s.n_vars))",
         column_labels = ["Test", "Statistic", "P-value", "H₀ (5%)"],
         alignment = [:l, :r, :r, :l],
-        table_format = _TABLE_FORMAT
     )
 end
 

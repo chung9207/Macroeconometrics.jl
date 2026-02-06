@@ -66,11 +66,10 @@ function Base.show(io::IO, r::NonGaussianMLResult{T}) where {T}
         "Converged"    r.converged ? "Yes" : "No";
         "Iterations"   r.iterations
     ]
-    pretty_table(io, spec;
+    _pretty_table(io, spec;
         title = "Non-Gaussian ML Identification Result",
         column_labels = ["", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
     _matrix_table(io, r.B0, "Structural Impact Matrix (B₀)";
         row_labels=["Var $i" for i in 1:n],

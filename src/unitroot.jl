@@ -1361,7 +1361,7 @@ test_all_variables(Y::AbstractMatrix; kwargs...) = test_all_variables(Float64.(Y
 # Publication-Quality Show Methods using PrettyTables
 # =============================================================================
 
-# _significance_stars, _format_pvalue, _TABLE_FORMAT are defined in display_utils.jl
+# _significance_stars, _format_pvalue are defined in display_utils.jl
 
 # Helper function to format regression specification name
 function _regression_name(regression::Symbol)
@@ -1387,32 +1387,29 @@ function Base.show(io::IO, r::ADFResult)
         "Lag length" r.lags;
         "Observations" r.nobs
     ]
-    pretty_table(io, spec_data;
+    _pretty_table(io, spec_data;
         title = "Augmented Dickey-Fuller Unit Root Test",
         column_labels = ["Specification", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
     stars = _significance_stars(r.pvalue)
     results_data = Any[
         "Test statistic (τ)" string(round(r.statistic, digits=4), " ", stars);
         "P-value" _format_pvalue(r.pvalue)
     ]
-    pretty_table(io, results_data;
+    _pretty_table(io, results_data;
         title = "Results",
         column_labels = ["", "Value"],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
     cv_data = Matrix{Any}(undef, 1, 3)
     cv_data[1, :] = [round(r.critical_values[1], digits=3),
                      round(r.critical_values[5], digits=3),
                      round(r.critical_values[10], digits=3)]
-    pretty_table(io, cv_data;
+    _pretty_table(io, cv_data;
         title = "Critical Values",
         column_labels = ["1%", "5%", "10%"],
         alignment = :r,
-        table_format = _TABLE_FORMAT
     )
     reject_1 = r.statistic < r.critical_values[1]
     reject_5 = r.statistic < r.critical_values[5]
@@ -1427,7 +1424,7 @@ function Base.show(io::IO, r::ADFResult)
         "Fail to reject H₀ (series appears non-stationary)"
     end
     conc_data = Any["Conclusion" conclusion; "Note" "*** p<0.01, ** p<0.05, * p<0.10"]
-    pretty_table(io, conc_data; column_labels=["",""], alignment=[:l,:l], table_format=_TABLE_FORMAT)
+    _pretty_table(io, conc_data; column_labels=["",""], alignment=[:l,:l])
 end
 
 function Base.show(io::IO, r::KPSSResult)
@@ -1439,11 +1436,10 @@ function Base.show(io::IO, r::KPSSResult)
         "Bandwidth (Bartlett)" r.bandwidth;
         "Observations" r.nobs
     ]
-    pretty_table(io, spec_data;
+    _pretty_table(io, spec_data;
         title = "KPSS Stationarity Test",
         column_labels = ["Specification", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
     stars = _significance_stars(r.pvalue)
     pval_display = r.pvalue < 0.01 ? "<0.01" : (r.pvalue > 0.10 ? ">0.10" : string(round(r.pvalue, digits=4)))
@@ -1451,21 +1447,19 @@ function Base.show(io::IO, r::KPSSResult)
         "LM statistic" string(round(r.statistic, digits=4), " ", stars);
         "P-value" pval_display
     ]
-    pretty_table(io, results_data;
+    _pretty_table(io, results_data;
         title = "Results",
         column_labels = ["", "Value"],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
     cv_data = Matrix{Any}(undef, 1, 3)
     cv_data[1, :] = [round(r.critical_values[10], digits=3),
                      round(r.critical_values[5], digits=3),
                      round(r.critical_values[1], digits=3)]
-    pretty_table(io, cv_data;
+    _pretty_table(io, cv_data;
         title = "Critical Values",
         column_labels = ["10%", "5%", "1%"],
         alignment = :r,
-        table_format = _TABLE_FORMAT
     )
     reject_1 = r.statistic > r.critical_values[1]
     reject_5 = r.statistic > r.critical_values[5]
@@ -1480,7 +1474,7 @@ function Base.show(io::IO, r::KPSSResult)
         "Fail to reject H₀ (series appears stationary)"
     end
     conc_data = Any["Conclusion" conclusion; "Note" "*** p<0.01, ** p<0.05, * p<0.10"]
-    pretty_table(io, conc_data; column_labels=["",""], alignment=[:l,:l], table_format=_TABLE_FORMAT)
+    _pretty_table(io, conc_data; column_labels=["",""], alignment=[:l,:l])
 end
 
 function Base.show(io::IO, r::PPResult)
@@ -1491,32 +1485,29 @@ function Base.show(io::IO, r::PPResult)
         "Bandwidth (Newey-West)" r.bandwidth;
         "Observations" r.nobs
     ]
-    pretty_table(io, spec_data;
+    _pretty_table(io, spec_data;
         title = "Phillips-Perron Unit Root Test",
         column_labels = ["Specification", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
     stars = _significance_stars(r.pvalue)
     results_data = Any[
         "Adj. t-statistic (Zₜ)" string(round(r.statistic, digits=4), " ", stars);
         "P-value" _format_pvalue(r.pvalue)
     ]
-    pretty_table(io, results_data;
+    _pretty_table(io, results_data;
         title = "Results",
         column_labels = ["", "Value"],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
     cv_data = Matrix{Any}(undef, 1, 3)
     cv_data[1, :] = [round(r.critical_values[1], digits=3),
                      round(r.critical_values[5], digits=3),
                      round(r.critical_values[10], digits=3)]
-    pretty_table(io, cv_data;
+    _pretty_table(io, cv_data;
         title = "Critical Values",
         column_labels = ["1%", "5%", "10%"],
         alignment = :r,
-        table_format = _TABLE_FORMAT
     )
     reject_1 = r.statistic < r.critical_values[1]
     reject_5 = r.statistic < r.critical_values[5]
@@ -1531,7 +1522,7 @@ function Base.show(io::IO, r::PPResult)
         "Fail to reject H₀ (series appears non-stationary)"
     end
     conc_data = Any["Conclusion" conclusion; "Note" "*** p<0.01, ** p<0.05, * p<0.10"]
-    pretty_table(io, conc_data; column_labels=["",""], alignment=[:l,:l], table_format=_TABLE_FORMAT)
+    _pretty_table(io, conc_data; column_labels=["",""], alignment=[:l,:l], )
 end
 
 function Base.show(io::IO, r::ZAResult)
@@ -1543,22 +1534,20 @@ function Base.show(io::IO, r::ZAResult)
         "Lag length" r.lags;
         "Observations" r.nobs
     ]
-    pretty_table(io, spec_data;
+    _pretty_table(io, spec_data;
         title = "Zivot-Andrews Unit Root Test with Structural Break",
         column_labels = ["Specification", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
     break_pct = string(round(r.break_fraction * 100, digits=1), "% of sample")
     break_data = Any[
         "Break index" r.break_index;
         "Break location" break_pct
     ]
-    pretty_table(io, break_data;
+    _pretty_table(io, break_data;
         title = "Estimated Break Point",
         column_labels = ["", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
     stars = _significance_stars(r.pvalue)
     pval_display = r.pvalue < 0.01 ? "<0.01" : string(round(r.pvalue, digits=4))
@@ -1566,21 +1555,19 @@ function Base.show(io::IO, r::ZAResult)
         "Minimum t-statistic" string(round(r.statistic, digits=4), " ", stars);
         "P-value" pval_display
     ]
-    pretty_table(io, results_data;
+    _pretty_table(io, results_data;
         title = "Results",
         column_labels = ["", "Value"],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
     cv_data = Matrix{Any}(undef, 1, 3)
     cv_data[1, :] = [round(r.critical_values[1], digits=2),
                      round(r.critical_values[5], digits=2),
                      round(r.critical_values[10], digits=2)]
-    pretty_table(io, cv_data;
+    _pretty_table(io, cv_data;
         title = "Critical Values",
         column_labels = ["1%", "5%", "10%"],
         alignment = :r,
-        table_format = _TABLE_FORMAT
     )
     reject_1 = r.statistic < r.critical_values[1]
     reject_5 = r.statistic < r.critical_values[5]
@@ -1595,7 +1582,7 @@ function Base.show(io::IO, r::ZAResult)
         "Fail to reject H₀ (unit root, no significant break)"
     end
     conc_data = Any["Conclusion" conclusion; "Note" "*** p<0.01, ** p<0.05, * p<0.10"]
-    pretty_table(io, conc_data; column_labels=["",""], alignment=[:l,:l], table_format=_TABLE_FORMAT)
+    _pretty_table(io, conc_data; column_labels=["",""], alignment=[:l,:l])
 end
 
 function Base.show(io::IO, r::NgPerronResult)
@@ -1605,11 +1592,10 @@ function Base.show(io::IO, r::NgPerronResult)
         "Deterministic terms" _regression_name(r.regression);
         "Observations" r.nobs
     ]
-    pretty_table(io, spec_data;
+    _pretty_table(io, spec_data;
         title = "Ng-Perron Unit Root Tests (GLS Detrended)",
         column_labels = ["Specification", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
     mza_reject_5 = r.MZa < r.critical_values[:MZa][5]
     mza_reject_1 = r.MZa < r.critical_values[:MZa][1]
@@ -1633,11 +1619,10 @@ function Base.show(io::IO, r::NgPerronResult)
         "MSB" string(round(r.MSB, digits=4), " ", msb_stars) round(r.critical_values[:MSB][5], digits=3) round(r.critical_values[:MSB][10], digits=3) round(r.critical_values[:MSB][1], digits=3);
         "MPT" string(round(r.MPT, digits=4), " ", mpt_stars) round(r.critical_values[:MPT][5], digits=2) round(r.critical_values[:MPT][10], digits=2) round(r.critical_values[:MPT][1], digits=2)
     ]
-    pretty_table(io, stats_data;
+    _pretty_table(io, stats_data;
         title = "Test Statistics",
         column_labels = ["Statistic", "Value", "5% CV", "10% CV", "1% CV"],
         alignment = [:l, :r, :r, :r, :r],
-        table_format = _TABLE_FORMAT
     )
     n_reject_5 = sum([mza_reject_5, mzt_reject_5, msb_reject_5, mpt_reject_5])
     conclusion = if n_reject_5 >= 3
@@ -1650,7 +1635,7 @@ function Base.show(io::IO, r::NgPerronResult)
         "Fail to reject H₀ (series appears non-stationary)"
     end
     conc_data = Any["Conclusion" conclusion; "Note" "*** p<0.01, ** p<0.05, * p<0.10"]
-    pretty_table(io, conc_data; column_labels=["",""], alignment=[:l,:l], table_format=_TABLE_FORMAT)
+    _pretty_table(io, conc_data; column_labels=["",""], alignment=[:l,:l])
 end
 
 function Base.show(io::IO, r::JohansenResult)
@@ -1664,11 +1649,10 @@ function Base.show(io::IO, r::JohansenResult)
         "Observations" r.nobs;
         "Number of variables" n
     ]
-    pretty_table(io, spec_data;
+    _pretty_table(io, spec_data;
         title = "Johansen Cointegration Test",
         column_labels = ["Specification", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
     trace_data = Matrix{Any}(undef, n, 5)
     for i in 1:n
@@ -1687,11 +1671,10 @@ function Base.show(io::IO, r::JohansenResult)
         trace_data[i, 4] = pval_str
         trace_data[i, 5] = reject_5 ? "Reject" : ""
     end
-    pretty_table(io, trace_data;
+    _pretty_table(io, trace_data;
         title = "Trace Test",
         column_labels = ["H₀: rank ≤ r", "Statistic", "5% CV", "P-value", "Decision"],
         alignment = [:r, :r, :r, :r, :l],
-        table_format = _TABLE_FORMAT
     )
     max_data = Matrix{Any}(undef, n, 5)
     for i in 1:n
@@ -1710,21 +1693,19 @@ function Base.show(io::IO, r::JohansenResult)
         max_data[i, 4] = pval_str
         max_data[i, 5] = reject_5 ? "Reject" : ""
     end
-    pretty_table(io, max_data;
+    _pretty_table(io, max_data;
         title = "Maximum Eigenvalue Test",
         column_labels = ["H₀: rank = r", "Statistic", "5% CV", "P-value", "Decision"],
         alignment = [:r, :r, :r, :r, :l],
-        table_format = _TABLE_FORMAT
     )
     eig_data = Matrix{Any}(undef, 1, n)
     for i in 1:n
         eig_data[1, i] = round(r.eigenvalues[i], digits=4)
     end
-    pretty_table(io, eig_data;
+    _pretty_table(io, eig_data;
         title = "Eigenvalues",
         column_labels = ["λ$i" for i in 1:n],
         alignment = :r,
-        table_format = _TABLE_FORMAT,
         row_labels = [""]
     )
     conclusion = if r.rank == 0
@@ -1735,7 +1716,7 @@ function Base.show(io::IO, r::JohansenResult)
         string("Estimated cointegration rank = ", r.rank)
     end
     conc_data = Any["Conclusion" conclusion; "Note" "*** p<0.01, ** p<0.05, * p<0.10"]
-    pretty_table(io, conc_data; column_labels=["",""], alignment=[:l,:l], table_format=_TABLE_FORMAT)
+    _pretty_table(io, conc_data; column_labels=["",""], alignment=[:l,:l])
 end
 
 function Base.show(io::IO, r::VARStationarityResult)
@@ -1763,11 +1744,10 @@ function Base.show(io::IO, r::VARStationarityResult)
         eig_data[nrows, 2] = string("(", n_eigs - 10, " more)")
         eig_data[nrows, 3] = ""
     end
-    pretty_table(io, eig_data;
+    _pretty_table(io, eig_data;
         title = "VAR Model Stationarity Test — Companion Matrix Eigenvalues",
         column_labels = ["Index", "Eigenvalue", "Modulus"],
         alignment = [:r, :r, :r],
-        table_format = _TABLE_FORMAT
     )
     result_str = r.is_stationary ?
         "VAR is STATIONARY (all eigenvalue moduli < 1)" :
@@ -1778,10 +1758,9 @@ function Base.show(io::IO, r::VARStationarityResult)
         "Stationary" (r.is_stationary ? "Yes" : "No");
         "Result" result_str
     ]
-    pretty_table(io, summary_data;
+    _pretty_table(io, summary_data;
         title = "Summary",
         column_labels = ["", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
 end

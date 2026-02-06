@@ -215,6 +215,52 @@ function historical_decomposition(model::VARModel{T}, horizon::Int;
 end
 
 # =============================================================================
+# Structural LP Historical Decomposition
+# =============================================================================
+
+"""
+    historical_decomposition(slp::StructuralLP{T}, T_hd::Int) -> HistoricalDecomposition{T}
+
+Compute historical decomposition from structural LP.
+
+Uses LP-estimated IRFs as the structural MA coefficients Θ_h and the structural
+shocks from the underlying VAR identification.
+
+# Arguments
+- `slp`: Structural LP result
+- `T_hd`: Number of time periods for decomposition (≤ T_eff of underlying VAR)
+
+# Returns
+`HistoricalDecomposition{T}` with contributions, initial conditions, and actual data.
+"""
+function historical_decomposition(slp::StructuralLP{T}, T_hd::Int) where {T<:AbstractFloat}
+    n = nvars(slp)
+    H = size(slp.irf.values, 1)
+    T_eff = effective_nobs(slp.var_model)
+    T_hd = min(T_hd, T_eff)
+
+    # LP IRFs as structural MA coefficients
+    Theta = [Matrix{T}(slp.irf.values[s, :, :]) for s in 1:H]
+
+    # Structural shocks (truncated to T_hd)
+    shocks = slp.structural_shocks[1:T_hd, :]
+
+    # Compute contributions
+    contributions = _compute_hd_contributions(shocks, Theta)
+
+    # Actual data from VAR's effective sample
+    actual = slp.var_model.Y[(slp.var_model.p+1):(slp.var_model.p+T_hd), :]
+
+    # Initial conditions
+    initial_conditions = _compute_initial_conditions(actual, contributions)
+
+    HistoricalDecomposition{T}(
+        contributions, initial_conditions, actual, shocks, T_hd,
+        default_var_names(n), default_shock_names(n), slp.method
+    )
+end
+
+# =============================================================================
 # Bayesian Historical Decomposition
 # =============================================================================
 
@@ -552,7 +598,7 @@ end
 # Publication-Quality Show Methods
 # =============================================================================
 
-# _TABLE_FORMAT is defined in display_utils.jl
+# Display helpers are defined in display_utils.jl
 
 function Base.show(io::IO, hd::HistoricalDecomposition{T}) where {T}
     n_vars = length(hd.variables)
@@ -565,11 +611,10 @@ function Base.show(io::IO, hd::HistoricalDecomposition{T}) where {T}
         "Shocks" n_shocks;
         "Time periods" hd.T_eff
     ]
-    pretty_table(io, spec_data;
+    _pretty_table(io, spec_data;
         title = "Historical Decomposition",
         column_labels = ["Specification", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
 
     # Summary statistics for each variable
@@ -583,21 +628,19 @@ function Base.show(io::IO, hd::HistoricalDecomposition{T}) where {T}
     end
 
     col_labels = vcat(["Variable"], hd.shock_names, ["Initial"])
-    pretty_table(io, summary_data;
+    _pretty_table(io, summary_data;
         title = "Contribution Summary (mean absolute contribution)",
         column_labels = col_labels,
         alignment = vcat([:l], fill(:r, n_shocks + 1)),
-        table_format = _TABLE_FORMAT
     )
 
     # Verification status
     verified = verify_decomposition(hd)
     status = verified ? "Passed" : "FAILED"
     conc_data = Any["Decomposition identity" status]
-    pretty_table(io, conc_data;
+    _pretty_table(io, conc_data;
         column_labels = ["", ""],
         alignment = [:l, :l],
-        table_format = _TABLE_FORMAT
     )
 end
 
@@ -615,11 +658,10 @@ function Base.show(io::IO, hd::BayesianHistoricalDecomposition{T}) where {T}
         "Time periods" hd.T_eff;
         "Quantiles" q_str
     ]
-    pretty_table(io, spec_data;
+    _pretty_table(io, spec_data;
         title = "Bayesian Historical Decomposition",
         column_labels = ["Specification", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
 
     # Summary statistics for each variable (posterior means)
@@ -633,10 +675,9 @@ function Base.show(io::IO, hd::BayesianHistoricalDecomposition{T}) where {T}
     end
 
     col_labels = vcat(["Variable"], hd.shock_names, ["Initial"])
-    pretty_table(io, summary_data;
+    _pretty_table(io, summary_data;
         title = "Posterior Mean Contribution Summary (mean absolute)",
         column_labels = col_labels,
         alignment = vcat([:l], fill(:r, n_shocks + 1)),
-        table_format = _TABLE_FORMAT
     )
 end

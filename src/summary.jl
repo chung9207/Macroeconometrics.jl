@@ -87,7 +87,7 @@ end
 # Table Formatting
 # =============================================================================
 
-# _TABLE_FORMAT, _fmt, _fmt_pct, _select_horizons are defined in display_utils.jl
+# _fmt, _fmt_pct, _select_horizons are defined in display_utils.jl
 
 # =============================================================================
 # summary() - Comprehensive summaries
@@ -109,21 +109,19 @@ function summary(model::VARModel{T}) where {T}
         "Observations (effective)" T_eff;
         "Parameters per equation" ncoefs(model)
     ]
-    pretty_table(stdout, spec_data;
+    _pretty_table(stdout, spec_data;
         title = "Vector Autoregression Model",
         column_labels = ["Specification", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
 
     ic_data = ["AIC" _fmt(model.aic; digits=2);
                "BIC" _fmt(model.bic; digits=2);
                "HQIC" _fmt(model.hqic; digits=2)]
-    pretty_table(stdout, ic_data;
+    _pretty_table(stdout, ic_data;
         title = "Information Criteria",
         column_labels = ["Criterion", "Value"],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
 
     Sigma_data = Matrix{Any}(undef, n, n + 1)
@@ -133,22 +131,20 @@ function summary(model::VARModel{T}) where {T}
             Sigma_data[i, j + 1] = _fmt(model.Sigma[i, j])
         end
     end
-    pretty_table(stdout, Sigma_data;
+    _pretty_table(stdout, Sigma_data;
         title = "Residual Covariance (Σ)",
         column_labels = vcat([""], ["Var $j" for j in 1:n]),
         alignment = vcat([:l], fill(:r, n)),
-        table_format = _TABLE_FORMAT
     )
 
     F = companion_matrix(model.B, n, p)
     max_mod = maximum(abs.(eigvals(F)))
     stable = max_mod < 1 ? "Yes" : "No"
     stab_data = Any["Stationary" stable; "Max |λ|" _fmt(max_mod)]
-    pretty_table(stdout, stab_data;
+    _pretty_table(stdout, stab_data;
         title = "Stationarity",
         column_labels = ["", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
 end
 
@@ -381,11 +377,10 @@ function print_table(io::IO, irf::ImpulseResponse{T}, var::Int, shock::Int;
         col_labels = ["h", "IRF"]
     end
 
-    pretty_table(io, raw;
+    _pretty_table(io, raw;
         title = "IRF: $(irf.variables[var]) ← $(irf.shocks[shock])",
         column_labels = col_labels,
         alignment = fill(:r, size(raw, 2)),
-        table_format = _TABLE_FORMAT
     )
 end
 
@@ -399,11 +394,10 @@ function print_table(io::IO, irf::BayesianImpulseResponse{T}, var::Int, shock::I
     q_labels = [_fmt_pct(q; digits=0) for q in irf.quantile_levels]
     col_labels = vcat(["h", "Mean"], q_labels)
 
-    pretty_table(io, raw;
+    _pretty_table(io, raw;
         title = "Bayesian IRF: $(irf.variables[var]) ← $(irf.shocks[shock])",
         column_labels = col_labels,
         alignment = fill(:r, size(raw, 2)),
-        table_format = _TABLE_FORMAT
     )
 end
 
@@ -430,11 +424,10 @@ function print_table(io::IO, f::FEVD{T}, var::Int;
     end
 
     col_labels = vcat(["h"], ["Shock $j" for j in 1:n_shocks])
-    pretty_table(io, data;
+    _pretty_table(io, data;
         title = "FEVD: Variable $var",
         column_labels = col_labels,
         alignment = fill(:r, size(data, 2)),
-        table_format = _TABLE_FORMAT
     )
 end
 
@@ -457,11 +450,10 @@ function print_table(io::IO, f::BayesianFEVD{T}, var::Int;
     end
 
     col_labels = vcat(["h"], f.shocks)
-    pretty_table(io, data;
+    _pretty_table(io, data;
         title = "Bayesian FEVD: $(f.variables[var]) ($stat_name)",
         column_labels = col_labels,
         alignment = fill(:r, size(data, 2)),
-        table_format = _TABLE_FORMAT
     )
 end
 
@@ -486,11 +478,10 @@ function print_table(io::IO, hd::HistoricalDecomposition{T}, var::Int;
     end
 
     col_labels = vcat(["t", "Actual"], hd.shock_names, ["Initial"])
-    pretty_table(io, data;
+    _pretty_table(io, data;
         title = "Historical Decomposition: $(hd.variables[var])",
         column_labels = col_labels,
         alignment = fill(:r, size(data, 2)),
-        table_format = _TABLE_FORMAT
     )
 end
 
@@ -514,11 +505,10 @@ function print_table(io::IO, hd::BayesianHistoricalDecomposition{T}, var::Int;
     end
 
     col_labels = vcat(["t", "Actual"], hd.shock_names, ["Initial"])
-    pretty_table(io, data;
+    _pretty_table(io, data;
         title = "Bayesian HD: $(hd.variables[var]) ($stat_name)",
         column_labels = col_labels,
         alignment = fill(:r, size(data, 2)),
-        table_format = _TABLE_FORMAT
     )
 end
 
@@ -535,11 +525,10 @@ function Base.show(io::IO, irf::ImpulseResponse{T}) where {T}
 
     ci_str = irf.ci_type == :none ? "None" : string(irf.ci_type)
     spec_data = ["Variables" n_vars; "Shocks" n_shocks; "Horizon" H; "CI" ci_str]
-    pretty_table(io, spec_data;
+    _pretty_table(io, spec_data;
         title = "Impulse Response Functions",
         column_labels = ["", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
 
     horizons_show = _select_horizons(H)
@@ -559,20 +548,18 @@ function Base.show(io::IO, irf::ImpulseResponse{T}) where {T}
             end
         end
 
-        pretty_table(io, data;
+        _pretty_table(io, data;
             title = "Shock: $(irf.shocks[j])",
             column_labels = vcat([""], ["h=$h" for h in horizons_show]),
             alignment = vcat([:l], fill(:r, length(horizons_show))),
-            table_format = _TABLE_FORMAT
         )
     end
 
     if irf.ci_type != :none
         note_data = Any["Note" "* CI excludes zero"]
-        pretty_table(io, note_data;
+        _pretty_table(io, note_data;
             column_labels = ["", ""],
             alignment = [:l, :l],
-            table_format = _TABLE_FORMAT
         )
     end
 end
@@ -584,11 +571,10 @@ function Base.show(io::IO, irf::BayesianImpulseResponse{T}) where {T}
 
     q_str = join([_fmt_pct(q; digits=0) for q in irf.quantile_levels], ", ")
     spec_data = ["Variables" n_vars; "Shocks" n_shocks; "Horizon" H; "Quantiles" q_str]
-    pretty_table(io, spec_data;
+    _pretty_table(io, spec_data;
         title = "Bayesian Impulse Response Functions",
         column_labels = ["", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
 
     horizons_show = _select_horizons(H)
@@ -606,19 +592,17 @@ function Base.show(io::IO, irf::BayesianImpulseResponse{T}) where {T}
             end
         end
 
-        pretty_table(io, data;
+        _pretty_table(io, data;
             title = "Shock: $(irf.shocks[j]) (median)",
             column_labels = vcat([""], ["h=$h" for h in horizons_show]),
             alignment = vcat([:l], fill(:r, length(horizons_show))),
-            table_format = _TABLE_FORMAT
         )
     end
 
     note_data = Any["Note" "* Credible interval excludes zero"]
-    pretty_table(io, note_data;
+    _pretty_table(io, note_data;
         column_labels = ["", ""],
         alignment = [:l, :l],
-        table_format = _TABLE_FORMAT
     )
 end
 
@@ -626,11 +610,10 @@ function Base.show(io::IO, f::FEVD{T}) where {T}
     n_vars, n_shocks, H = size(f.proportions)
 
     spec_data = ["Variables" n_vars; "Shocks" n_shocks; "Horizon" H]
-    pretty_table(io, spec_data;
+    _pretty_table(io, spec_data;
         title = "Forecast Error Variance Decomposition",
         column_labels = ["", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
 
     for h in _select_horizons(H)
@@ -642,11 +625,10 @@ function Base.show(io::IO, f::FEVD{T}) where {T}
             end
         end
 
-        pretty_table(io, data;
+        _pretty_table(io, data;
             title = "h = $h",
             column_labels = vcat([""], ["Shock $j" for j in 1:n_shocks]),
             alignment = vcat([:l], fill(:r, n_shocks)),
-            table_format = _TABLE_FORMAT
         )
     end
 end
@@ -657,11 +639,10 @@ function Base.show(io::IO, f::BayesianFEVD{T}) where {T}
 
     q_str = join([_fmt_pct(q; digits=0) for q in f.quantile_levels], ", ")
     spec_data = ["Variables" n_vars; "Shocks" n_shocks; "Horizon" H; "Quantiles" q_str]
-    pretty_table(io, spec_data;
+    _pretty_table(io, spec_data;
         title = "Bayesian FEVD (posterior mean)",
         column_labels = ["", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
 
     for h in _select_horizons(H)
@@ -673,11 +654,145 @@ function Base.show(io::IO, f::BayesianFEVD{T}) where {T}
             end
         end
 
-        pretty_table(io, data;
+        _pretty_table(io, data;
             title = "h = $h",
             column_labels = vcat([""], f.shocks),
             alignment = vcat([:l], fill(:r, n_shocks)),
-            table_format = _TABLE_FORMAT
         )
     end
 end
+
+# =============================================================================
+# Structural LP Display
+# =============================================================================
+
+function Base.show(io::IO, slp::StructuralLP{T}) where {T}
+    n = nvars(slp)
+    H = size(slp.irf.values, 1)
+
+    ci_str = slp.irf.ci_type == :none ? "None" : string(slp.irf.ci_type)
+    spec_data = [
+        "Identification" string(slp.method);
+        "Variables" n;
+        "IRF horizon" H;
+        "LP lags" slp.lags;
+        "HAC estimator" string(slp.cov_type);
+        "CI" ci_str
+    ]
+    _pretty_table(io, spec_data;
+        title = "Structural Local Projections",
+        column_labels = ["Specification", ""],
+        alignment = [:l, :r],
+    )
+
+    # Show IRF summary at selected horizons
+    horizons_show = _select_horizons(H)
+    for j in 1:n
+        data = Matrix{Any}(undef, n, length(horizons_show) + 1)
+        for v in 1:n
+            data[v, 1] = slp.irf.variables[v]
+            for (hi, h) in enumerate(horizons_show)
+                val = slp.irf.values[h, v, j]
+                se_val = slp.se[h, v, j]
+                sig = abs(val) > 1.96 * se_val ? "*" : ""
+                data[v, hi + 1] = string(_fmt(val), sig)
+            end
+        end
+
+        _pretty_table(io, data;
+            title = "Shock: $(slp.irf.shocks[j])",
+            column_labels = vcat([""], ["h=$h" for h in horizons_show]),
+            alignment = vcat([:l], fill(:r, length(horizons_show))),
+        )
+    end
+
+    note_data = Any["Note" "* significant at 5% (|IRF/SE| > 1.96)"]
+    _pretty_table(io, note_data;
+        column_labels = ["", ""],
+        alignment = [:l, :l],
+    )
+end
+
+point_estimate(r::StructuralLP) = r.irf.values
+has_uncertainty(r::StructuralLP) = r.irf.ci_type != :none
+function uncertainty_bounds(r::StructuralLP)
+    r.irf.ci_type == :none && return nothing
+    (r.irf.ci_lower, r.irf.ci_upper)
+end
+
+"""
+    print_table([io], slp::StructuralLP, var, shock; horizons=nothing)
+
+Print formatted IRF table for a specific variable-shock pair from structural LP.
+"""
+function print_table(io::IO, slp::StructuralLP{T}, var::Int, shock::Int;
+                     horizons::Union{Nothing,AbstractVector{Int}}=nothing) where {T}
+    print_table(io, slp.irf, var, shock; horizons=horizons)
+end
+
+print_table(slp::StructuralLP, var::Int, shock::Int; kwargs...) =
+    print_table(stdout, slp, var, shock; kwargs...)
+
+# =============================================================================
+# LP Forecast Display
+# =============================================================================
+
+function Base.show(io::IO, fc::LPForecast{T}) where {T}
+    H = fc.horizon
+    n_resp = length(fc.response_vars)
+
+    spec_data = [
+        "Forecast horizon" H;
+        "Response variables" n_resp;
+        "Shock variable" fc.shock_var;
+        "CI method" string(fc.ci_method);
+        "Confidence level" _fmt_pct(fc.conf_level)
+    ]
+    _pretty_table(io, spec_data;
+        title = "LP Forecast",
+        column_labels = ["Specification", ""],
+        alignment = [:l, :r],
+    )
+
+    # Forecast table
+    data = Matrix{Any}(undef, H, 1 + n_resp * (fc.ci_method == :none ? 1 : 3))
+    col_labels = String["h"]
+
+    for (j, rv) in enumerate(fc.response_vars)
+        if fc.ci_method == :none
+            push!(col_labels, "Var $rv")
+            for h in 1:H
+                data[h, 1] = h
+                data[h, 1 + j] = _fmt(fc.forecasts[h, j])
+            end
+        else
+            push!(col_labels, "Var $rv")
+            push!(col_labels, "CI_lo")
+            push!(col_labels, "CI_hi")
+            col_offset = 1 + (j - 1) * 3
+            for h in 1:H
+                data[h, 1] = h
+                data[h, col_offset + 1] = _fmt(fc.forecasts[h, j])
+                data[h, col_offset + 2] = _fmt(fc.ci_lower[h, j])
+                data[h, col_offset + 3] = _fmt(fc.ci_upper[h, j])
+            end
+        end
+    end
+
+    _pretty_table(io, data;
+        title = "Forecasts",
+        column_labels = col_labels,
+        alignment = fill(:r, length(col_labels)),
+    )
+end
+
+"""
+    print_table([io], fc::LPForecast)
+
+Print formatted LP forecast table.
+"""
+function print_table(io::IO, fc::LPForecast{T}) where {T}
+    show(io, fc)
+end
+
+print_table(fc::LPForecast) = print_table(stdout, fc)

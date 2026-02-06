@@ -118,11 +118,10 @@ function Base.show(io::IO, m::VARModel{T}) where {T}
         "BIC"          _fmt(m.bic; digits=2);
         "HQIC"         _fmt(m.hqic; digits=2)
     ]
-    pretty_table(io, spec;
+    _pretty_table(io, spec;
         title = "VAR($(m.p)) Model",
         column_labels = ["Specification", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
 end
 
@@ -323,10 +322,9 @@ function Base.show(io::IO, fc::FactorForecast{T}) where {T}
         "Observables" N;
         "CI method"   ci_str
     ]
-    pretty_table(io, data;
+    _pretty_table(io, data;
         title = "Factor Forecast",
         column_labels = ["", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
 end

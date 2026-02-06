@@ -119,6 +119,7 @@ include("covariance_estimators.jl")
 include("lp_types.jl")      # LP type definitions
 include("lp_core.jl")       # Core LP estimation + shared utilities
 include("lp_extensions.jl") # LP-IV, Smooth LP, State LP, Propensity LP
+include("lp_forecast.jl")   # LP forecasting
 
 # IRF and FEVD (after LP types for lp_irf support)
 include("irf.jl")
@@ -154,6 +155,7 @@ export AbstractFactorModel, FactorModel, DynamicFactorModel, GeneralizedDynamicF
 # Local Projection types
 export AbstractLPModel, AbstractLPImpulseResponse, AbstractCovarianceEstimator
 export LPModel, LPImpulseResponse, LPIVModel, SmoothLPModel, StateLPModel, PropensityLPModel
+export StructuralLP, LPForecast
 export NeweyWestEstimator, WhiteEstimator, DriscollKraayEstimator
 export BSplineBasis, StateTransition, PropensityScoreConfig
 
@@ -254,6 +256,7 @@ export contribution, total_shock_contribution, verify_decomposition
 
 export summary, table, print_table
 export point_estimate, has_uncertainty, uncertainty_bounds
+export set_display_backend, get_display_backend
 
 # =============================================================================
 # Exports - Factor Models
@@ -296,6 +299,7 @@ export nvars, nlags, ncoefs, effective_nobs
 # Core LP estimation (Jordà 2005)
 export estimate_lp, lp_irf, cumulative_irf
 export estimate_lp_multi, estimate_lp_cholesky, compare_var_lp
+export structural_lp
 
 # HAC covariance estimators
 export newey_west, white_vcov, driscoll_kraay, optimal_bandwidth_nw, kernel_weight

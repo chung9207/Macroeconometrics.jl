@@ -41,11 +41,10 @@ function Base.show(io::IO, r::IdentifiabilityTestResult{T}) where {T}
         "P-value"   _format_pvalue(r.pvalue);
         "Status"    r.identified ? "Identified" : "Not identified"
     ]
-    pretty_table(io, data;
+    _pretty_table(io, data;
         title = "IdentifiabilityTest: $(r.test_name)",
         column_labels = ["", ""],
         alignment = [:l, :r],
-        table_format = _TABLE_FORMAT
     )
 end
 

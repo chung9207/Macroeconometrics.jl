@@ -290,6 +290,194 @@ function estimate_lp_cholesky(Y::AbstractMatrix{T}, horizon::Int;
 end
 
 # =============================================================================
+# Structural LP (Plagborg-Møller & Wolf 2021)
+# =============================================================================
+
+"""
+    structural_lp(Y::AbstractMatrix{T}, horizon::Int;
+                  method=:cholesky, lags=4, var_lags=nothing,
+                  cov_type=:newey_west, conf_level=0.95,
+                  ci_type=:none, reps=200,
+                  check_func=nothing, narrative_check=nothing,
+                  max_draws=1000) -> StructuralLP{T}
+
+Estimate structural LP impulse responses using VAR-based identification with LP estimation.
+
+Algorithm:
+1. Estimate VAR(p) → obtain Σ and residuals
+2. Compute rotation matrix Q via chosen identification method
+3. Compute structural shocks ε_t = Q'L⁻¹u_t
+4. For each shock j, run LP with ε_j as regressor and Y_eff as responses
+5. Stack into 3D IRF array: irfs[h, i, j]
+
+# Arguments
+- `Y`: T × n data matrix
+- `horizon`: Maximum IRF horizon H
+
+# Keyword Arguments
+- `method`: Identification method (:cholesky, :sign, :narrative, :long_run,
+            :fastica, :jade, :sobi, :dcov, :hsic, :student_t, :mixture_normal, :pml)
+- `lags`: Number of LP control lags (default: 4)
+- `var_lags`: VAR lag order for identification (default: same as `lags`)
+- `cov_type`: HAC estimator (:newey_west, :white)
+- `conf_level`: Confidence level for CIs (default: 0.95)
+- `ci_type`: CI method (:none, :bootstrap)
+- `reps`: Number of bootstrap replications
+- `check_func`: Sign restriction check function (for :sign/:narrative)
+- `narrative_check`: Narrative check function (for :narrative)
+- `max_draws`: Maximum draws for sign/narrative identification
+
+# Returns
+`StructuralLP{T}` with 3D IRFs, structural shocks, VAR model, and individual LP models.
+
+# References
+Plagborg-Møller, M. & Wolf, C. K. (2021). "Local Projections and VARs Estimate the Same
+Impulse Responses." *Econometrica*, 89(2), 955–980.
+"""
+function structural_lp(Y::AbstractMatrix{T}, horizon::Int;
+                       method::Symbol=:cholesky, lags::Int=4,
+                       var_lags::Union{Nothing,Int}=nothing,
+                       cov_type::Symbol=:newey_west, conf_level::Real=0.95,
+                       ci_type::Symbol=:none, reps::Int=200,
+                       check_func=nothing, narrative_check=nothing,
+                       max_draws::Int=1000) where {T<:AbstractFloat}
+    T_obs, n = size(Y)
+    p = isnothing(var_lags) ? lags : var_lags
+
+    validate_positive(horizon, "horizon")
+    @assert T_obs > p + horizon + 1 "Not enough observations"
+
+    # Step 1: Estimate VAR for identification
+    var_model = estimate_var(Y, p)
+
+    # Step 2: Compute identification matrix Q
+    Q = compute_Q(var_model, method, horizon, check_func, narrative_check; max_draws=max_draws)
+
+    # Step 3: Compute structural shocks
+    eps = compute_structural_shocks(var_model, Q)
+
+    # Step 4: Run LP for each shock
+    Y_eff = Y[(p+1):end, :]
+    @assert size(eps, 1) == size(Y_eff, 1) "Dimension mismatch between shocks and effective Y"
+
+    response_vars_aug = collect(2:(n+1))
+    lp_models_raw = Vector{Any}(undef, n)
+    for shock in 1:n
+        Y_aug = hcat(eps[:, shock], Y_eff)
+        lp_models_raw[shock] = estimate_lp(Y_aug, 1, horizon; lags=lags,
+                                            response_vars=response_vars_aug,
+                                            cov_type=cov_type, conf_level=conf_level)
+    end
+    # Determine element type from first model (may differ from T due to promotions)
+    ET = eltype(lp_models_raw[1].Y)
+    lp_models = Vector{LPModel{ET}}(lp_models_raw)
+
+    # Step 5: Build 3D IRF array and SE array
+    irfs, se_arr = _build_structural_lp_arrays(lp_models, n, horizon, ET)
+
+    # Step 6: Bootstrap CIs if requested
+    ci_lower, ci_upper = zeros(ET, horizon, n, n), zeros(ET, horizon, n, n)
+    ci_sym = :none
+    if ci_type == :bootstrap
+        ci_lower, ci_upper = _structural_lp_bootstrap(Matrix{ET}(Y), horizon, n, p, method,
+                                                       lags, cov_type, reps, ET(conf_level),
+                                                       check_func, narrative_check, max_draws)
+        ci_sym = :bootstrap
+    end
+
+    irf_result = ImpulseResponse{ET}(irfs, ci_lower, ci_upper, horizon,
+                                      default_var_names(n), default_shock_names(n), ci_sym)
+
+    StructuralLP{ET}(irf_result, Matrix{ET}(eps), var_model, Matrix{ET}(Q), method,
+                     lags, cov_type, se_arr, lp_models)
+end
+
+# Float fallback
+structural_lp(Y::AbstractMatrix, horizon::Int; kwargs...) =
+    structural_lp(Float64.(Y), horizon; kwargs...)
+
+"""Extract 3D IRF and SE arrays from per-shock LP models."""
+function _build_structural_lp_arrays(lp_models::Vector{LPModel{T}}, n::Int,
+                                      horizon::Int, ::Type{T}) where {T<:AbstractFloat}
+    irfs = zeros(T, horizon, n, n)
+    se_arr = zeros(T, horizon, n, n)
+
+    for shock in 1:n
+        irf_data = extract_shock_irf(lp_models[shock].B, lp_models[shock].vcov,
+                                      lp_models[shock].response_vars, 2)
+        # extract_shock_irf returns (H+1) rows (h=0,...,H); IRF array uses h=1,...,H
+        for h in 1:horizon
+            for resp in 1:n
+                irfs[h, resp, shock] = irf_data.values[h+1, resp]
+                se_arr[h, resp, shock] = irf_data.se[h+1, resp]
+            end
+        end
+    end
+    irfs, se_arr
+end
+
+"""Block bootstrap for structural LP confidence intervals."""
+function _structural_lp_bootstrap(Y::AbstractMatrix{T}, horizon::Int, n::Int, p::Int,
+                                   method::Symbol, lags::Int, cov_type::Symbol,
+                                   reps::Int, conf_level::T,
+                                   check_func, narrative_check,
+                                   max_draws::Int) where {T<:AbstractFloat}
+    T_obs = size(Y, 1)
+    sim_irfs = zeros(T, reps, horizon, n, n)
+    block_size = max(1, round(Int, T_obs^(1/3)))
+
+    Threads.@threads for r in 1:reps
+        # Block bootstrap on Y
+        Y_boot = _block_bootstrap(Y, block_size)
+        try
+            var_m = estimate_var(Y_boot, p)
+            Q_r = compute_Q(var_m, method, horizon, check_func, narrative_check; max_draws=max_draws)
+            eps_r = compute_structural_shocks(var_m, Q_r)
+
+            Y_eff_r = Y_boot[(p+1):end, :]
+            for shock in 1:n
+                Y_aug = hcat(eps_r[:, shock], Y_eff_r)
+                lp_r = estimate_lp(Y_aug, 1, horizon; lags=lags,
+                                    response_vars=collect(2:(n+1)), cov_type=cov_type)
+                irf_data = extract_shock_irf(lp_r.B, lp_r.vcov, lp_r.response_vars, 2)
+                for h in 1:horizon, resp in 1:n
+                    sim_irfs[r, h, resp, shock] = irf_data.values[h+1, resp]
+                end
+            end
+        catch
+            # If bootstrap draw fails (e.g., singular matrix), skip
+            continue
+        end
+    end
+
+    alpha = (1 - conf_level) / 2
+    ci_lower = zeros(T, horizon, n, n)
+    ci_upper = zeros(T, horizon, n, n)
+    @inbounds for h in 1:horizon, v in 1:n, s in 1:n
+        d = @view sim_irfs[:, h, v, s]
+        ci_lower[h, v, s] = quantile(d, alpha)
+        ci_upper[h, v, s] = quantile(d, 1 - alpha)
+    end
+    ci_lower, ci_upper
+end
+
+"""Generate a block bootstrap sample from matrix Y."""
+function _block_bootstrap(Y::AbstractMatrix{T}, block_size::Int) where {T<:AbstractFloat}
+    T_obs, n = size(Y)
+    n_blocks = ceil(Int, T_obs / block_size)
+    Y_boot = Matrix{T}(undef, n_blocks * block_size, n)
+
+    idx = 1
+    for _ in 1:n_blocks
+        start = rand(1:max(1, T_obs - block_size + 1))
+        len = min(block_size, T_obs - start + 1)
+        Y_boot[idx:idx+len-1, :] = Y[start:start+len-1, :]
+        idx += len
+    end
+    Y_boot[1:T_obs, :]
+end
+
+# =============================================================================
 # Model Comparison
 # =============================================================================
 
