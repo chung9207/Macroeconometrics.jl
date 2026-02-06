@@ -123,6 +123,24 @@ AriasSVARResult
 
 ---
 
+## Non-Gaussian SVAR Types
+
+```@docs
+AbstractNormalityTest
+AbstractNonGaussianSVAR
+NormalityTestResult
+NormalityTestSuite
+ICASVARResult
+NonGaussianMLResult
+MarkovSwitchingSVARResult
+GARCHSVARResult
+SmoothTransitionSVARResult
+ExternalVolatilitySVARResult
+IdentifiabilityTestResult
+```
+
+---
+
 ## Type Hierarchy
 
 ```
@@ -183,4 +201,19 @@ AbstractUnitRootTest <: StatsAPI.HypothesisTest
 └── JohansenResult{T}
 
 VARStationarityResult{T}
+
+AbstractNormalityTest <: StatsAPI.HypothesisTest
+└── NormalityTestResult{T}
+
+NormalityTestSuite{T}
+
+AbstractNonGaussianSVAR
+├── ICASVARResult{T}
+├── NonGaussianMLResult{T}
+├── MarkovSwitchingSVARResult{T}
+├── GARCHSVARResult{T}
+├── SmoothTransitionSVARResult{T}
+└── ExternalVolatilitySVARResult{T}
+
+IdentifiabilityTestResult{T}
 ```

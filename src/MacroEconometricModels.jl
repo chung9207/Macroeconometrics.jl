@@ -83,6 +83,13 @@ include("unitroot.jl")
 # Structural analysis
 include("identification.jl")
 
+# Non-Gaussian VAR identification and testing
+include("normality_tests.jl")       # Multivariate normality diagnostics
+include("nongaussian_ica.jl")       # ICA-based SVAR identification
+include("nongaussian_ml.jl")        # Non-Gaussian ML SVAR estimation
+include("heteroskedastic_id.jl")    # Heteroskedasticity-based identification
+include("nongaussian_tests.jl")     # Identifiability and specification tests
+
 # Bayesian processing utilities (after bayesian.jl and identification.jl)
 include("bayesian_utils.jl")
 
@@ -337,6 +344,41 @@ export estimate_ar, estimate_ma, estimate_arma, estimate_arima
 
 # Order selection
 export select_arima_order, auto_arima, ic_table
+
+# =============================================================================
+# Exports - Non-Gaussian VAR Identification
+# =============================================================================
+
+# Abstract types
+export AbstractNormalityTest, AbstractNonGaussianSVAR
+
+# Result types
+export NormalityTestResult, NormalityTestSuite
+export ICASVARResult, NonGaussianMLResult
+export MarkovSwitchingSVARResult, GARCHSVARResult
+export SmoothTransitionSVARResult, ExternalVolatilitySVARResult
+export IdentifiabilityTestResult
+
+# Normality tests
+export jarque_bera_test, mardia_test, doornik_hansen_test
+export henze_zirkler_test, normality_test_suite
+
+# ICA-based SVAR identification
+export identify_fastica, identify_jade, identify_sobi
+export identify_dcov, identify_hsic
+
+# Non-Gaussian ML SVAR
+export identify_student_t, identify_mixture_normal
+export identify_pml, identify_skew_normal, identify_nongaussian_ml
+
+# Heteroskedasticity identification
+export identify_markov_switching, identify_garch
+export identify_smooth_transition, identify_external_volatility
+
+# Identifiability tests
+export test_identification_strength, test_shock_gaussianity
+export test_gaussian_vs_nongaussian, test_shock_independence
+export test_overidentification
 
 # =============================================================================
 # Exports - StatsAPI Interface

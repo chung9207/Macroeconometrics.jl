@@ -30,6 +30,7 @@ makedocs(;
         "Bayesian Models" => [
             "Bayesian VAR" => "bayesian.md",
         ],
+        "Non-Gaussian SVAR" => "nongaussian.md",
         "Innovation Accounting" => "innovation_accounting.md",
         "Hypothesis Tests" => [
             "Unit Root & Cointegration" => "hypothesis_tests.md",

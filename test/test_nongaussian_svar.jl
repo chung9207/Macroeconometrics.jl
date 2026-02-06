@@ -1,0 +1,346 @@
+using Test
+using MacroEconometricModels
+using Random
+using LinearAlgebra
+using Distributions
+using StatsAPI
+
+@testset "Non-Gaussian SVAR Identification" begin
+    Random.seed!(54321)
+
+    # Generate VAR data
+    n_obs = 300
+    Y = randn(n_obs, 3)
+    model = estimate_var(Y, 2)
+    n = 3
+
+    @testset "ICA-based Identification" begin
+        @testset "FastICA deflation" begin
+            result = identify_fastica(model; approach=:deflation)
+            @test result isa ICASVARResult{Float64}
+            @test result.method == :fastica
+            @test size(result.B0) == (n, n)
+            @test size(result.W) == (n, n)
+            @test size(result.Q) == (n, n)
+            @test size(result.shocks) == (n_obs - 2, n)
+
+            # Q should be orthogonal
+            @test norm(result.Q' * result.Q - I) < 1e-6
+
+            # B₀ B₀' ≈ Σ
+            @test norm(result.B0 * result.B0' - model.Sigma) / norm(model.Sigma) < 0.5
+
+            # Show method
+            buf = IOBuffer()
+            show(buf, result)
+            @test occursin("ICASVARResult", String(take!(buf)))
+        end
+
+        @testset "FastICA symmetric" begin
+            result = identify_fastica(model; approach=:symmetric)
+            @test result isa ICASVARResult{Float64}
+            @test norm(result.Q' * result.Q - I) < 1e-6
+        end
+
+        @testset "FastICA contrasts" begin
+            for contrast in [:logcosh, :exp, :kurtosis]
+                result = identify_fastica(model; contrast=contrast)
+                @test result isa ICASVARResult{Float64}
+                @test norm(result.Q' * result.Q - I) < 1e-6
+            end
+        end
+
+        @testset "JADE" begin
+            result = identify_jade(model)
+            @test result isa ICASVARResult{Float64}
+            @test result.method == :jade
+            @test size(result.B0) == (n, n)
+            @test norm(result.Q' * result.Q - I) < 1e-6
+        end
+
+        @testset "SOBI" begin
+            result = identify_sobi(model; lags=1:5)
+            @test result isa ICASVARResult{Float64}
+            @test result.method == :sobi
+            @test size(result.B0) == (n, n)
+            @test norm(result.Q' * result.Q - I) < 1e-6
+        end
+
+        @testset "dCov" begin
+            result = identify_dcov(model)
+            @test result isa ICASVARResult{Float64}
+            @test result.method == :dcov
+            @test size(result.B0) == (n, n)
+            @test norm(result.Q' * result.Q - I) < 1e-6
+            @test result.objective >= 0
+        end
+
+        @testset "HSIC" begin
+            result = identify_hsic(model)
+            @test result isa ICASVARResult{Float64}
+            @test result.method == :hsic
+            @test size(result.B0) == (n, n)
+            @test norm(result.Q' * result.Q - I) < 1e-6
+        end
+    end
+
+    @testset "Non-Gaussian ML Identification" begin
+        @testset "Student-t" begin
+            result = identify_student_t(model)
+            @test result isa NonGaussianMLResult{Float64}
+            @test result.distribution == :student_t
+            @test size(result.B0) == (n, n)
+            @test size(result.Q) == (n, n)
+            @test norm(result.Q' * result.Q - I) < 1e-6
+            @test haskey(result.dist_params, :nu)
+            @test length(result.dist_params[:nu]) == n
+            @test all(result.dist_params[:nu] .> 2)
+            @test result.loglik > -Inf
+            @test size(result.se) == (n, n)
+            @test result.aic > -Inf
+            @test result.bic > -Inf
+
+            # Show method
+            buf = IOBuffer()
+            show(buf, result)
+            @test occursin("NonGaussianMLResult", String(take!(buf)))
+        end
+
+        @testset "Mixture normal" begin
+            result = identify_mixture_normal(model)
+            @test result isa NonGaussianMLResult{Float64}
+            @test result.distribution == :mixture_normal
+            @test norm(result.Q' * result.Q - I) < 1e-6
+        end
+
+        @testset "PML" begin
+            result = identify_pml(model)
+            @test result isa NonGaussianMLResult{Float64}
+            @test result.distribution == :pml
+            @test haskey(result.dist_params, :kappa)
+            @test haskey(result.dist_params, :nu)
+        end
+
+        @testset "Skew normal" begin
+            result = identify_skew_normal(model)
+            @test result isa NonGaussianMLResult{Float64}
+            @test result.distribution == :skew_normal
+            @test haskey(result.dist_params, :alpha)
+            @test norm(result.Q' * result.Q - I) < 1e-6
+        end
+
+        @testset "Unified dispatcher" begin
+            for dist in [:student_t, :mixture_normal, :pml, :skew_normal]
+                result = identify_nongaussian_ml(model; distribution=dist)
+                @test result isa NonGaussianMLResult{Float64}
+                @test result.distribution == dist
+            end
+        end
+    end
+
+    @testset "Heteroskedasticity Identification" begin
+        @testset "Markov-switching" begin
+            result = identify_markov_switching(model; n_regimes=2)
+            @test result isa MarkovSwitchingSVARResult{Float64}
+            @test size(result.B0) == (n, n)
+            @test size(result.Q) == (n, n)
+            @test length(result.Sigma_regimes) == 2
+            @test all(size(S) == (n, n) for S in result.Sigma_regimes)
+            @test size(result.regime_probs) == (n_obs - 2, 2)
+            @test size(result.transition_matrix) == (2, 2)
+            @test result.n_regimes == 2
+            @test result.loglik > -Inf
+
+            # Regime probs should sum to ~1
+            @test all(sum(result.regime_probs, dims=2) .≈ 1.0)
+
+            # Transition matrix rows sum to 1
+            @test all(isapprox.(sum(result.transition_matrix, dims=2), 1.0, atol=1e-6))
+
+            # Show method
+            buf = IOBuffer()
+            show(buf, result)
+            @test occursin("MarkovSwitching", String(take!(buf)))
+        end
+
+        @testset "GARCH" begin
+            result = identify_garch(model)
+            @test result isa GARCHSVARResult{Float64}
+            @test size(result.B0) == (n, n)
+            @test size(result.garch_params) == (n, 3)
+            @test size(result.cond_var) == (n_obs - 2, n)
+            @test size(result.shocks) == (n_obs - 2, n)
+            @test all(result.cond_var .> 0)  # conditional variances positive
+
+            # GARCH params: omega > 0, alpha >= 0, beta >= 0
+            @test all(result.garch_params[:, 1] .> 0)
+            @test all(result.garch_params[:, 2] .>= 0)
+            @test all(result.garch_params[:, 3] .>= 0)
+
+            buf = IOBuffer()
+            show(buf, result)
+            @test occursin("GARCHSVARResult", String(take!(buf)))
+        end
+
+        @testset "Smooth transition" begin
+            Random.seed!(99)
+            s = randn(n_obs)
+            result = identify_smooth_transition(model, s)
+            @test result isa SmoothTransitionSVARResult{Float64}
+            @test size(result.B0) == (n, n)
+            @test length(result.Sigma_regimes) == 2
+            @test result.gamma > 0
+            @test length(result.G_values) == n_obs - 2
+            @test all(0 .<= result.G_values .<= 1)  # logistic in [0,1]
+
+            buf = IOBuffer()
+            show(buf, result)
+            @test occursin("SmoothTransition", String(take!(buf)))
+        end
+
+        @testset "External volatility" begin
+            regime = vcat(fill(1, 150), fill(2, 150))
+            result = identify_external_volatility(model, regime)
+            @test result isa ExternalVolatilitySVARResult{Float64}
+            @test size(result.B0) == (n, n)
+            @test length(result.Sigma_regimes) == 2
+            @test length(result.Lambda) == 2
+            @test length(result.regime_indices) == 2
+            @test result.loglik > -Inf
+
+            buf = IOBuffer()
+            show(buf, result)
+            @test occursin("ExternalVolatility", String(take!(buf)))
+        end
+    end
+
+    @testset "Identifiability Tests" begin
+        ica = identify_fastica(model)
+        ml = identify_student_t(model)
+
+        @testset "Shock gaussianity - ICA" begin
+            result = test_shock_gaussianity(ica)
+            @test result isa IdentifiabilityTestResult{Float64}
+            @test result.test_name == :shock_gaussianity
+            @test result.statistic >= 0
+            @test 0 <= result.pvalue <= 1
+            @test haskey(result.details, :jb_stats)
+            @test haskey(result.details, :n_gaussian)
+
+            buf = IOBuffer()
+            show(buf, result)
+            @test occursin("IdentifiabilityTest", String(take!(buf)))
+        end
+
+        @testset "Shock gaussianity - ML" begin
+            result = test_shock_gaussianity(ml)
+            @test result isa IdentifiabilityTestResult{Float64}
+            @test result.test_name == :shock_gaussianity
+        end
+
+        @testset "Gaussian vs non-Gaussian LR" begin
+            result = test_gaussian_vs_nongaussian(model; distribution=:student_t)
+            @test result isa IdentifiabilityTestResult{Float64}
+            @test result.test_name == :gaussian_vs_nongaussian
+            @test result.statistic >= 0
+            @test 0 <= result.pvalue <= 1
+            @test haskey(result.details, :df)
+        end
+
+        @testset "Shock independence - ICA" begin
+            result = test_shock_independence(ica; max_lag=5)
+            @test result isa IdentifiabilityTestResult{Float64}
+            @test result.test_name == :shock_independence
+            @test result.statistic >= 0
+            @test 0 <= result.pvalue <= 1
+            @test haskey(result.details, :cc_statistic)
+            @test haskey(result.details, :dcov_statistic)
+        end
+
+        @testset "Shock independence - ML" begin
+            result = test_shock_independence(ml; max_lag=5)
+            @test result isa IdentifiabilityTestResult{Float64}
+        end
+
+        @testset "Overidentification" begin
+            result = test_overidentification(model, ica; n_bootstrap=99)
+            @test result isa IdentifiabilityTestResult{Float64}
+            @test result.test_name == :overidentification
+            @test result.statistic >= 0
+            @test 0 <= result.pvalue <= 1
+        end
+
+        @testset "Identification strength" begin
+            result = test_identification_strength(model; method=:fastica, n_bootstrap=49)
+            @test result isa IdentifiabilityTestResult{Float64}
+            @test result.test_name == :identification_strength
+            @test result.statistic >= 0
+            @test 0 <= result.pvalue <= 1
+            @test haskey(result.details, :n_bootstrap)
+        end
+    end
+
+    @testset "compute_Q Integration" begin
+        # Test that ICA methods work through compute_Q → irf pipeline
+        for method in [:fastica, :jade, :sobi, :dcov, :hsic]
+            Q = compute_Q(model, method, 10, nothing, nothing)
+            @test size(Q) == (n, n)
+            @test norm(Q' * Q - I) < 1e-4
+        end
+
+        # Non-Gaussian ML methods through compute_Q
+        for method in [:student_t, :mixture_normal, :pml, :skew_normal]
+            Q = compute_Q(model, method, 10, nothing, nothing)
+            @test size(Q) == (n, n)
+            @test norm(Q' * Q - I) < 1e-4
+        end
+
+        # Heteroskedasticity methods
+        for method in [:markov_switching, :garch]
+            Q = compute_Q(model, method, 10, nothing, nothing)
+            @test size(Q) == (n, n)
+        end
+
+        # irf integration
+        irf_result = irf(model, 10; method=:fastica)
+        @test size(irf_result.values) == (10, n, n)
+    end
+
+    @testset "Type Hierarchy" begin
+        @test AbstractNormalityTest <: StatsAPI.HypothesisTest
+        @test AbstractNonGaussianSVAR isa DataType
+
+        ica = identify_fastica(model)
+        @test ica isa AbstractNonGaussianSVAR
+
+        ml = identify_student_t(model)
+        @test ml isa AbstractNonGaussianSVAR
+
+        ms = identify_markov_switching(model)
+        @test ms isa AbstractNonGaussianSVAR
+
+        garch = identify_garch(model)
+        @test garch isa AbstractNonGaussianSVAR
+
+        st = identify_smooth_transition(model, randn(n_obs))
+        @test st isa AbstractNonGaussianSVAR
+
+        ev = identify_external_volatility(model, vcat(fill(1, 150), fill(2, 150)))
+        @test ev isa AbstractNonGaussianSVAR
+    end
+
+    @testset "Bivariate model" begin
+        Y2 = randn(200, 2)
+        model2 = estimate_var(Y2, 1)
+
+        ica2 = identify_fastica(model2)
+        @test size(ica2.B0) == (2, 2)
+        @test norm(ica2.Q' * ica2.Q - I) < 1e-6
+
+        ml2 = identify_student_t(model2)
+        @test size(ml2.B0) == (2, 2)
+
+        ms2 = identify_markov_switching(model2)
+        @test size(ms2.B0) == (2, 2)
+    end
+end

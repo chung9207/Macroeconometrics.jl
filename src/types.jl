@@ -48,6 +48,12 @@ abstract type AbstractPrior end
 """Abstract supertype for factor models (static and dynamic)."""
 abstract type AbstractFactorModel <: StatsAPI.StatisticalModel end
 
+"""Abstract supertype for multivariate normality test results."""
+abstract type AbstractNormalityTest <: StatsAPI.HypothesisTest end
+
+"""Abstract supertype for non-Gaussian SVAR identification results."""
+abstract type AbstractNonGaussianSVAR end
+
 # =============================================================================
 # Abstract Types - Analysis Result Types
 # =============================================================================

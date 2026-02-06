@@ -95,4 +95,12 @@ using Test
     @testset "Covariance Estimators" begin
         include("test_covariance.jl")
     end
+
+    @testset "Multivariate Normality Tests" begin
+        include("test_normality.jl")
+    end
+
+    @testset "Non-Gaussian SVAR Identification" begin
+        include("test_nongaussian_svar.jl")
+    end
 end

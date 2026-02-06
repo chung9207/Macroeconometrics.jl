@@ -49,6 +49,20 @@ The API documentation is organized into the following pages:
 | `identify_sign(model; ...)` | Sign restriction identification |
 | `identify_long_run(model)` | Blanchard-Quah identification |
 | `identify_narrative(model; ...)` | Narrative sign restrictions |
+| `identify_fastica(model; ...)` | FastICA SVAR identification |
+| `identify_jade(model; ...)` | JADE SVAR identification |
+| `identify_sobi(model; ...)` | SOBI SVAR identification |
+| `identify_dcov(model; ...)` | Distance covariance SVAR identification |
+| `identify_hsic(model; ...)` | HSIC SVAR identification |
+| `identify_student_t(model; ...)` | Student-t ML SVAR identification |
+| `identify_mixture_normal(model; ...)` | Mixture-normal ML SVAR identification |
+| `identify_pml(model; ...)` | Pseudo-ML SVAR identification |
+| `identify_skew_normal(model; ...)` | Skew-normal ML SVAR identification |
+| `identify_nongaussian_ml(model; ...)` | Unified non-Gaussian ML dispatcher |
+| `identify_markov_switching(model; ...)` | Markov-switching SVAR identification |
+| `identify_garch(model; ...)` | GARCH SVAR identification |
+| `identify_smooth_transition(model, s; ...)` | Smooth-transition SVAR identification |
+| `identify_external_volatility(model, regime)` | External volatility SVAR identification |
 
 ### Unit Root Test Functions
 
@@ -102,6 +116,26 @@ The API documentation is organized into the following pages:
 | `propensity_diagnostics(model)` | Propensity score diagnostics |
 | `j_test(model)` | Hansen J-test for GMM |
 | `gmm_summary(model)` | Summary statistics for GMM |
+
+### Normality Test Functions
+
+| Function | Description |
+|----------|-------------|
+| `jarque_bera_test(model; method=:multivariate)` | Multivariate Jarque-Bera test |
+| `mardia_test(model; type=:both)` | Mardia skewness/kurtosis tests |
+| `doornik_hansen_test(model)` | Doornik-Hansen omnibus test |
+| `henze_zirkler_test(model)` | Henze-Zirkler characteristic function test |
+| `normality_test_suite(model)` | Run all normality tests |
+
+### Identifiability Test Functions
+
+| Function | Description |
+|----------|-------------|
+| `test_shock_gaussianity(result)` | Test non-Gaussianity of recovered shocks |
+| `test_gaussian_vs_nongaussian(model; ...)` | LR test: Gaussian vs non-Gaussian |
+| `test_shock_independence(result; ...)` | Test independence of recovered shocks |
+| `test_identification_strength(model; ...)` | Bootstrap identification strength test |
+| `test_overidentification(model, result; ...)` | Overidentification test |
 
 ### Covariance Functions
 

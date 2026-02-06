@@ -134,7 +134,25 @@ function compute_Q(model::VARModel{T}, method::Symbol, horizon::Int, check_func,
         throw(ArgumentError("Need check_func and narrative_check for narrative"))
     method == :narrative && return identify_narrative(model, horizon, check_func, narrative_check; max_draws)[1]
     method == :long_run && return identify_long_run(model)
-    throw(ArgumentError("Unknown method: $method. Use :cholesky, :sign, :narrative, :long_run"))
+
+    # Non-Gaussian ICA methods (defined in nongaussian_ica.jl, loaded after this file)
+    method == :fastica       && return identify_fastica(model).Q
+    method == :jade          && return identify_jade(model).Q
+    method == :sobi          && return identify_sobi(model).Q
+    method == :dcov          && return identify_dcov(model).Q
+    method == :hsic          && return identify_hsic(model).Q
+
+    # Non-Gaussian ML methods (defined in nongaussian_ml.jl)
+    method == :student_t      && return identify_student_t(model).Q
+    method == :mixture_normal && return identify_mixture_normal(model).Q
+    method == :pml            && return identify_pml(model).Q
+    method == :skew_normal    && return identify_skew_normal(model).Q
+
+    # Heteroskedasticity methods (defined in heteroskedastic_id.jl)
+    method == :markov_switching && return identify_markov_switching(model).Q
+    method == :garch            && return identify_garch(model).Q
+
+    throw(ArgumentError("Unknown method: $method"))
 end
 
 # =============================================================================

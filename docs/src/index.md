@@ -14,6 +14,7 @@
 - **Bayesian VAR**: Minnesota/Litterman prior with automatic hyperparameter optimization via marginal likelihood (Giannone, Lenza & Primiceri, 2015)
 - **Local Projections**: Jordà (2005) methodology with extensions for IV (Stock & Watson, 2018), smooth LP (Barnichon & Brownlees, 2019), state-dependence (Auerbach & Gorodnichenko, 2013), and propensity score methods (Angrist, Jordà & Kuersteiner, 2018)
 - **Factor Models**: Static, dynamic, and generalized dynamic factor models with Bai & Ng (2002) information criteria; unified forecasting with theoretical (analytical) and bootstrap confidence intervals
+- **Non-Gaussian SVAR**: ICA-based identification (FastICA, JADE, SOBI, dCov, HSIC), non-Gaussian ML (Student-t, mixture-normal, PML, skew-normal), heteroskedasticity-based identification (Markov-switching, GARCH, smooth-transition), multivariate normality tests, identifiability diagnostics
 - **Hypothesis Tests**: Comprehensive unit root tests (ADF, KPSS, Phillips-Perron, Zivot-Andrews, Ng-Perron) and Johansen cointegration test
 - **GMM Estimation**: Flexible GMM framework with one-step, two-step, and iterated estimation
 - **Robust Inference**: Newey-West, White, and Driscoll-Kraay HAC standard errors with automatic bandwidth selection
