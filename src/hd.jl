@@ -552,19 +552,11 @@ end
 # Publication-Quality Show Methods
 # =============================================================================
 
-# Custom text format for tables (matching unitroot.jl pattern)
-const _HD_TABLE_FORMAT = TextTableFormat(
-    borders = text_table_borders__borderless,
-    horizontal_line_after_column_labels = true
-)
+# _TABLE_FORMAT is defined in display_utils.jl
 
 function Base.show(io::IO, hd::HistoricalDecomposition{T}) where {T}
     n_vars = length(hd.variables)
     n_shocks = length(hd.shock_names)
-
-    println(io, "")
-    println(io, "Historical Decomposition")
-    println(io, "══════════════════════════════════════════════════════════")
 
     # Specification table
     spec_data = [
@@ -574,15 +566,13 @@ function Base.show(io::IO, hd::HistoricalDecomposition{T}) where {T}
         "Time periods" hd.T_eff
     ]
     pretty_table(io, spec_data;
+        title = "Historical Decomposition",
         column_labels = ["Specification", ""],
         alignment = [:l, :r],
-        table_format = _HD_TABLE_FORMAT
+        table_format = _TABLE_FORMAT
     )
 
     # Summary statistics for each variable
-    println(io, "")
-    println(io, "Contribution Summary (mean absolute contribution)")
-
     summary_data = Matrix{Any}(undef, n_vars, n_shocks + 2)
     for i in 1:n_vars
         summary_data[i, 1] = hd.variables[i]
@@ -594,27 +584,27 @@ function Base.show(io::IO, hd::HistoricalDecomposition{T}) where {T}
 
     col_labels = vcat(["Variable"], hd.shock_names, ["Initial"])
     pretty_table(io, summary_data;
+        title = "Contribution Summary (mean absolute contribution)",
         column_labels = col_labels,
         alignment = vcat([:l], fill(:r, n_shocks + 1)),
-        table_format = _HD_TABLE_FORMAT
+        table_format = _TABLE_FORMAT
     )
 
     # Verification status
-    println(io, "")
     verified = verify_decomposition(hd)
     status = verified ? "Passed" : "FAILED"
-    println(io, "Decomposition identity: ", status)
-    println(io, "──────────────────────────────────────────────────────────")
+    conc_data = Any["Decomposition identity" status]
+    pretty_table(io, conc_data;
+        column_labels = ["", ""],
+        alignment = [:l, :l],
+        table_format = _TABLE_FORMAT
+    )
 end
 
 function Base.show(io::IO, hd::BayesianHistoricalDecomposition{T}) where {T}
     n_vars = length(hd.variables)
     n_shocks = length(hd.shock_names)
     nq = length(hd.quantile_levels)
-
-    println(io, "")
-    println(io, "Bayesian Historical Decomposition")
-    println(io, "══════════════════════════════════════════════════════════")
 
     # Specification table
     q_str = join([string(round(q * 100, digits=0), "%") for q in hd.quantile_levels], ", ")
@@ -626,15 +616,13 @@ function Base.show(io::IO, hd::BayesianHistoricalDecomposition{T}) where {T}
         "Quantiles" q_str
     ]
     pretty_table(io, spec_data;
+        title = "Bayesian Historical Decomposition",
         column_labels = ["Specification", ""],
         alignment = [:l, :r],
-        table_format = _HD_TABLE_FORMAT
+        table_format = _TABLE_FORMAT
     )
 
     # Summary statistics for each variable (posterior means)
-    println(io, "")
-    println(io, "Posterior Mean Contribution Summary (mean absolute)")
-
     summary_data = Matrix{Any}(undef, n_vars, n_shocks + 2)
     for i in 1:n_vars
         summary_data[i, 1] = hd.variables[i]
@@ -646,10 +634,9 @@ function Base.show(io::IO, hd::BayesianHistoricalDecomposition{T}) where {T}
 
     col_labels = vcat(["Variable"], hd.shock_names, ["Initial"])
     pretty_table(io, summary_data;
+        title = "Posterior Mean Contribution Summary (mean absolute)",
         column_labels = col_labels,
         alignment = vcat([:l], fill(:r, n_shocks + 1)),
-        table_format = _HD_TABLE_FORMAT
+        table_format = _TABLE_FORMAT
     )
-
-    println(io, "──────────────────────────────────────────────────────────")
 end

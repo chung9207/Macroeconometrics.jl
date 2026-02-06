@@ -45,11 +45,19 @@ struct NormalityTestResult{T<:AbstractFloat} <: AbstractNormalityTest
 end
 
 function Base.show(io::IO, r::NormalityTestResult{T}) where {T}
-    println(io, "Normality Test: $(r.test_name)")
-    println(io, "  Statistic: $(round(r.statistic, digits=4))")
-    println(io, "  P-value:   $(round(r.pvalue, digits=4))")
-    println(io, "  DF:        $(r.df)")
-    print(io,   "  n_vars=$(r.n_vars), n_obs=$(r.n_obs)")
+    data = Any[
+        "Statistic"          _fmt(r.statistic);
+        "P-value"            _format_pvalue(r.pvalue);
+        "Degrees of freedom" r.df;
+        "Variables"          r.n_vars;
+        "Observations"       r.n_obs
+    ]
+    pretty_table(io, data;
+        title = "Normality Test: $(r.test_name)",
+        column_labels = ["", ""],
+        alignment = [:l, :r],
+        table_format = _TABLE_FORMAT
+    )
 end
 
 # StatsAPI interface
@@ -74,14 +82,19 @@ struct NormalityTestSuite{T<:AbstractFloat}
 end
 
 function Base.show(io::IO, s::NormalityTestSuite{T}) where {T}
-    println(io, "Multivariate Normality Test Suite (n=$(s.n_obs), k=$(s.n_vars))")
-    println(io, "─" ^ 60)
-    for r in s.results
-        pstr = r.pvalue < 0.001 ? "<0.001" : string(round(r.pvalue, digits=4))
-        reject = r.pvalue < 0.05 ? " *" : ""
-        println(io, "  $(rpad(string(r.test_name), 20)) stat=$(rpad(round(r.statistic, digits=4), 10)) p=$(pstr)$(reject)")
+    data = Matrix{Any}(undef, length(s.results), 4)
+    for (i, r) in enumerate(s.results)
+        data[i, 1] = string(r.test_name)
+        data[i, 2] = _fmt(r.statistic)
+        data[i, 3] = _format_pvalue(r.pvalue)
+        data[i, 4] = r.pvalue < 0.05 ? "Reject" : "Fail to reject"
     end
-    print(io, "  (* = reject H₀ at 5%)")
+    pretty_table(io, data;
+        title = "Multivariate Normality Test Suite (n=$(s.n_obs), k=$(s.n_vars))",
+        column_labels = ["Test", "Statistic", "P-value", "H₀ (5%)"],
+        alignment = [:l, :r, :r, :l],
+        table_format = _TABLE_FORMAT
+    )
 end
 
 # =============================================================================

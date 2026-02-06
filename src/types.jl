@@ -108,6 +108,24 @@ nlags(model::VARModel) = model.p
 ncoefs(model::VARModel) = 1 + nvars(model) * model.p
 effective_nobs(model::VARModel) = size(model.Y, 1) - model.p
 
+function Base.show(io::IO, m::VARModel{T}) where {T}
+    n = nvars(m)
+    spec = Any[
+        "Variables"    n;
+        "Lags"         m.p;
+        "Observations" size(m.Y, 1);
+        "AIC"          _fmt(m.aic; digits=2);
+        "BIC"          _fmt(m.bic; digits=2);
+        "HQIC"         _fmt(m.hqic; digits=2)
+    ]
+    pretty_table(io, spec;
+        title = "VAR($(m.p)) Model",
+        column_labels = ["Specification", ""],
+        alignment = [:l, :r],
+        table_format = _TABLE_FORMAT
+    )
+end
+
 # =============================================================================
 # Impulse Response Functions
 # =============================================================================
@@ -298,6 +316,17 @@ end
 function Base.show(io::IO, fc::FactorForecast{T}) where {T}
     h, r = size(fc.factors)
     N = size(fc.observables, 2)
-    ci_str = fc.ci_method == :none ? "no CI" : "$(fc.ci_method) CI ($(round(100*fc.conf_level, digits=1))%)"
-    print(io, "FactorForecast{$T}: h=$h, r=$r, N=$N, $ci_str")
+    ci_str = fc.ci_method == :none ? "none" : "$(fc.ci_method) ($(round(100*fc.conf_level, digits=1))%)"
+    data = Any[
+        "Horizon"     h;
+        "Factors"     r;
+        "Observables" N;
+        "CI method"   ci_str
+    ]
+    pretty_table(io, data;
+        title = "Factor Forecast",
+        column_labels = ["", ""],
+        alignment = [:l, :r],
+        table_format = _TABLE_FORMAT
+    )
 end

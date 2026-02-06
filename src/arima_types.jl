@@ -314,14 +314,44 @@ StatsAPI.islinear(::AbstractARIMAModel) = true
 
 function _show_arima_model(io::IO, header::String, m::AbstractARIMAModel;
                            phi::Vector=Float64[], theta::Vector=Float64[])
-    println(io, header)
-    println(io, "  Intercept: $(round(m.c, digits=4))")
-    !isempty(phi) && println(io, "  AR coefficients: $(round.(phi, digits=4))")
-    !isempty(theta) && println(io, "  MA coefficients: $(round.(theta, digits=4))")
-    println(io, "  σ²: $(round(m.sigma2, digits=4))")
-    println(io, "  Log-likelihood: $(round(m.loglik, digits=2))")
-    println(io, "  AIC: $(round(m.aic, digits=2)), BIC: $(round(m.bic, digits=2))")
-    print(io, "  Method: $(m.method), Converged: $(m.converged)")
+    # Parameters table
+    rows = Any[["Intercept", _fmt(m.c)]]
+    if !isempty(phi)
+        rows_str = join([string(_fmt(p)) for p in phi], ", ")
+        push!(rows, ["AR coefficients", rows_str])
+        for (i, p) in enumerate(phi)
+            push!(rows, ["  φ[$i]", _fmt(p)])
+        end
+    end
+    if !isempty(theta)
+        rows_str = join([string(_fmt(t)) for t in theta], ", ")
+        push!(rows, ["MA coefficients", rows_str])
+        for (i, t) in enumerate(theta)
+            push!(rows, ["  θ[$i]", _fmt(t)])
+        end
+    end
+    push!(rows, ["σ²", _fmt(m.sigma2)])
+    data = reduce(vcat, permutedims.(rows))
+    pretty_table(io, data;
+        title = header,
+        column_labels = ["Parameter", "Estimate"],
+        alignment = [:l, :r],
+        table_format = _TABLE_FORMAT
+    )
+
+    # Fit statistics table
+    fit_data = Any[
+        "Log-likelihood" _fmt(m.loglik; digits=2);
+        "AIC"            _fmt(m.aic; digits=2);
+        "BIC"            _fmt(m.bic; digits=2);
+        "Method"         string(m.method);
+        "Converged"      string(m.converged)
+    ]
+    pretty_table(io, fit_data;
+        column_labels = ["Fit", "Value"],
+        alignment = [:l, :r],
+        table_format = _TABLE_FORMAT
+    )
 end
 
 Base.show(io::IO, m::ARModel) = _show_arima_model(io, "AR($(m.p)) Model", m; phi=m.phi)
@@ -330,15 +360,42 @@ Base.show(io::IO, m::ARMAModel) = _show_arima_model(io, "ARMA($(m.p),$(m.q)) Mod
 Base.show(io::IO, m::ARIMAModel) = _show_arima_model(io, "ARIMA($(m.p),$(m.d),$(m.q)) Model", m; phi=m.phi, theta=m.theta)
 
 function Base.show(io::IO, f::ARIMAForecast)
-    println(io, "ARIMA Forecast (h=$(f.horizon), $(round(100*f.conf_level, digits=0))% CI)")
-    for i in 1:min(5, f.horizon)
-        println(io, "  h=$i: $(round(f.forecast[i], digits=4)) [$(round(f.ci_lower[i], digits=4)), $(round(f.ci_upper[i], digits=4))]")
+    h = f.horizon
+    ci_pct = round(Int, 100 * f.conf_level)
+    n_show = min(10, h)
+    nrows = h > n_show ? n_show + 1 : n_show
+    data = Matrix{Any}(undef, nrows, 4)
+    for i in 1:n_show
+        data[i, 1] = i
+        data[i, 2] = _fmt(f.forecast[i])
+        data[i, 3] = _fmt(f.ci_lower[i])
+        data[i, 4] = _fmt(f.ci_upper[i])
     end
-    f.horizon > 5 && print(io, "  ... ($(f.horizon - 5) more)")
+    if h > n_show
+        data[nrows, 1] = "..."
+        data[nrows, 2] = "($(h - n_show) more)"
+        data[nrows, 3] = ""
+        data[nrows, 4] = ""
+    end
+    pretty_table(io, data;
+        title = "ARIMA Forecast (h=$h, $(ci_pct)% CI)",
+        column_labels = ["h", "Forecast", "Lower", "Upper"],
+        alignment = [:r, :r, :r, :r],
+        table_format = _TABLE_FORMAT
+    )
 end
 
 function Base.show(io::IO, r::ARIMAOrderSelection)
-    println(io, "ARIMA Order Selection")
-    println(io, "  Best by AIC: p=$(r.best_p_aic), q=$(r.best_q_aic) (AIC=$(round(r.aic_matrix[r.best_p_aic+1, r.best_q_aic+1], digits=2)))")
-    print(io, "  Best by BIC: p=$(r.best_p_bic), q=$(r.best_q_bic) (BIC=$(round(r.bic_matrix[r.best_p_bic+1, r.best_q_bic+1], digits=2)))")
+    aic_val = _fmt(r.aic_matrix[r.best_p_aic+1, r.best_q_aic+1]; digits=2)
+    bic_val = _fmt(r.bic_matrix[r.best_p_bic+1, r.best_q_bic+1]; digits=2)
+    data = Any[
+        "AIC" r.best_p_aic r.best_q_aic aic_val;
+        "BIC" r.best_p_bic r.best_q_bic bic_val
+    ]
+    pretty_table(io, data;
+        title = "ARIMA Order Selection",
+        column_labels = ["Criterion", "p", "q", "Value"],
+        alignment = [:l, :r, :r, :r],
+        table_format = _TABLE_FORMAT
+    )
 end

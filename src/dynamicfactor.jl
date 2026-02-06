@@ -63,6 +63,40 @@ end
 
 @float_fallback estimate_dynamic_factors X
 
+function Base.show(io::IO, m::DynamicFactorModel{T}) where {T}
+    Tobs, N = size(m.X)
+    spec = Any[
+        "Factors"        m.r;
+        "Lags"           m.p;
+        "Variables"      N;
+        "Observations"   Tobs;
+        "Method"         string(m.method);
+        "Log-likelihood" _fmt(m.loglik; digits=2);
+        "Converged"      m.converged ? "Yes" : "No";
+        "Iterations"     m.iterations
+    ]
+    pretty_table(io, spec;
+        title = "Dynamic Factor Model (r=$(m.r), p=$(m.p))",
+        column_labels = ["Specification", ""],
+        alignment = [:l, :r],
+        table_format = _TABLE_FORMAT
+    )
+    # Variance explained
+    n_show = min(m.r, 5)
+    var_data = Matrix{Any}(undef, n_show, 3)
+    for i in 1:n_show
+        var_data[i, 1] = "Factor $i"
+        var_data[i, 2] = _fmt_pct(m.explained_variance[i])
+        var_data[i, 3] = _fmt_pct(m.cumulative_variance[i])
+    end
+    pretty_table(io, var_data;
+        title = "Variance Explained",
+        column_labels = ["", "Variance", "Cumulative"],
+        alignment = [:l, :r, :r],
+        table_format = _TABLE_FORMAT
+    )
+end
+
 # =============================================================================
 # Two-Step Estimation
 # =============================================================================

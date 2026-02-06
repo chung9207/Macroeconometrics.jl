@@ -33,7 +33,7 @@ using StatsAPI
             # Show method
             buf = IOBuffer()
             show(buf, result)
-            @test occursin("ICASVARResult", String(take!(buf)))
+            @test occursin("ICA-SVAR", String(take!(buf)))
         end
 
         @testset "FastICA symmetric" begin
@@ -103,7 +103,7 @@ using StatsAPI
             # Show method
             buf = IOBuffer()
             show(buf, result)
-            @test occursin("NonGaussianMLResult", String(take!(buf)))
+            @test occursin("Non-Gaussian ML", String(take!(buf)))
         end
 
         @testset "Mixture normal" begin
@@ -160,7 +160,7 @@ using StatsAPI
             # Show method
             buf = IOBuffer()
             show(buf, result)
-            @test occursin("MarkovSwitching", String(take!(buf)))
+            @test occursin("Markov-Switching", String(take!(buf)))
         end
 
         @testset "GARCH" begin
@@ -179,7 +179,7 @@ using StatsAPI
 
             buf = IOBuffer()
             show(buf, result)
-            @test occursin("GARCHSVARResult", String(take!(buf)))
+            @test occursin("GARCH-SVAR", String(take!(buf)))
         end
 
         @testset "Smooth transition" begin
@@ -195,7 +195,7 @@ using StatsAPI
 
             buf = IOBuffer()
             show(buf, result)
-            @test occursin("SmoothTransition", String(take!(buf)))
+            @test occursin("Smooth-Transition", String(take!(buf)))
         end
 
         @testset "External volatility" begin
@@ -210,7 +210,7 @@ using StatsAPI
 
             buf = IOBuffer()
             show(buf, result)
-            @test occursin("ExternalVolatility", String(take!(buf)))
+            @test occursin("External Volatility", String(take!(buf)))
         end
     end
 

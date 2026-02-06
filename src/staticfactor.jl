@@ -63,6 +63,36 @@ end
 
 @float_fallback estimate_factors X
 
+function Base.show(io::IO, m::FactorModel{T}) where {T}
+    Tobs, N = size(m.X)
+    spec = Any[
+        "Factors"       m.r;
+        "Variables"     N;
+        "Observations"  Tobs;
+        "Standardized"  m.standardized ? "Yes" : "No"
+    ]
+    pretty_table(io, spec;
+        title = "Static Factor Model (r=$(m.r))",
+        column_labels = ["Specification", ""],
+        alignment = [:l, :r],
+        table_format = _TABLE_FORMAT
+    )
+    # Variance explained
+    n_show = min(m.r, 5)
+    var_data = Matrix{Any}(undef, n_show, 3)
+    for i in 1:n_show
+        var_data[i, 1] = "Factor $i"
+        var_data[i, 2] = _fmt_pct(m.explained_variance[i])
+        var_data[i, 3] = _fmt_pct(m.cumulative_variance[i])
+    end
+    pretty_table(io, var_data;
+        title = "Variance Explained",
+        column_labels = ["", "Variance", "Cumulative"],
+        alignment = [:l, :r, :r],
+        table_format = _TABLE_FORMAT
+    )
+end
+
 # =============================================================================
 # StatsAPI Interface
 # =============================================================================

@@ -103,6 +103,54 @@ end
 is_overidentified(model::GMMModel) = model.n_moments > model.n_params
 overid_df(model::GMMModel) = model.n_moments - model.n_params
 
+function Base.show(io::IO, m::GMMModel{T}) where {T}
+    spec = Any[
+        "Parameters"  m.n_params;
+        "Moments"     m.n_moments;
+        "Observations" m.n_obs;
+        "Weighting"   string(m.weighting.method);
+        "Converged"   m.converged ? "Yes" : "No";
+        "Iterations"  m.iterations
+    ]
+    pretty_table(io, spec;
+        title = "GMM Estimation Result",
+        column_labels = ["", ""],
+        alignment = [:l, :r],
+        table_format = _TABLE_FORMAT
+    )
+    # Coefficient table
+    se = sqrt.(max.(diag(m.vcov), zero(T)))
+    coef_data = Matrix{Any}(undef, m.n_params, 4)
+    for i in 1:m.n_params
+        t_stat = se[i] > 0 ? m.theta[i] / se[i] : T(NaN)
+        pval = se[i] > 0 ? 2 * (1 - cdf(Normal(), abs(t_stat))) : T(NaN)
+        coef_data[i, 1] = "θ[$i]"
+        coef_data[i, 2] = _fmt(m.theta[i])
+        coef_data[i, 3] = _fmt(se[i])
+        coef_data[i, 4] = isnan(t_stat) ? "—" : string(_fmt(t_stat))
+    end
+    pretty_table(io, coef_data;
+        title = "Coefficients",
+        column_labels = ["", "Estimate", "Std. Error", "t-stat"],
+        alignment = [:l, :r, :r, :r],
+        table_format = _TABLE_FORMAT
+    )
+    # J-test
+    if is_overidentified(m)
+        j_data = Any[
+            "J-statistic" _fmt(m.J_stat);
+            "P-value"     _format_pvalue(m.J_pvalue);
+            "DF"          overid_df(m)
+        ]
+        pretty_table(io, j_data;
+            title = "Hansen J-test",
+            column_labels = ["", ""],
+            alignment = [:l, :r],
+            table_format = _TABLE_FORMAT
+        )
+    end
+end
+
 # StatsAPI interface for GMMModel
 StatsAPI.coef(model::GMMModel) = model.theta
 StatsAPI.vcov(model::GMMModel) = model.vcov

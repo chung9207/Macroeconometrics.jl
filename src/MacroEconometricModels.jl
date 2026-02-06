@@ -72,6 +72,9 @@ include("utils.jl")
 # Type definitions (depends on utils.jl for some functions)
 include("types.jl")
 
+# Shared PrettyTables formatting (before any file that uses display helpers)
+include("display_utils.jl")
+
 # Estimation modules
 include("estimation.jl")
 include("priors.jl")

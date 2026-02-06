@@ -36,11 +36,17 @@ struct IdentifiabilityTestResult{T<:AbstractFloat}
 end
 
 function Base.show(io::IO, r::IdentifiabilityTestResult{T}) where {T}
-    status = r.identified ? "identified" : "not identified"
-    println(io, "IdentifiabilityTest: $(r.test_name)")
-    println(io, "  Statistic: $(round(r.statistic, digits=4))")
-    println(io, "  P-value:   $(round(r.pvalue, digits=4))")
-    print(io,   "  Status:    $status")
+    data = Any[
+        "Statistic" _fmt(r.statistic);
+        "P-value"   _format_pvalue(r.pvalue);
+        "Status"    r.identified ? "Identified" : "Not identified"
+    ]
+    pretty_table(io, data;
+        title = "IdentifiabilityTest: $(r.test_name)",
+        column_labels = ["", ""],
+        alignment = [:l, :r],
+        table_format = _TABLE_FORMAT
+    )
 end
 
 # =============================================================================

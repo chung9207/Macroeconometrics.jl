@@ -81,6 +81,37 @@ end
 
 @float_fallback estimate_gdfm X
 
+function Base.show(io::IO, m::GeneralizedDynamicFactorModel{T}) where {T}
+    Tobs, N = size(m.X)
+    spec = Any[
+        "Dynamic factors"  m.q;
+        "Static factors"   m.r;
+        "Variables"        N;
+        "Observations"     Tobs;
+        "Kernel"           string(m.kernel);
+        "Bandwidth"        m.bandwidth;
+        "Standardized"     m.standardized ? "Yes" : "No"
+    ]
+    pretty_table(io, spec;
+        title = "Generalized Dynamic Factor Model (q=$(m.q), r=$(m.r))",
+        column_labels = ["Specification", ""],
+        alignment = [:l, :r],
+        table_format = _TABLE_FORMAT
+    )
+    n_show = min(m.r, 5)
+    var_data = Matrix{Any}(undef, n_show, 2)
+    for i in 1:n_show
+        var_data[i, 1] = "Factor $i"
+        var_data[i, 2] = _fmt_pct(m.variance_explained[i])
+    end
+    pretty_table(io, var_data;
+        title = "Variance Explained",
+        column_labels = ["", "Variance"],
+        alignment = [:l, :r],
+        table_format = _TABLE_FORMAT
+    )
+end
+
 # =============================================================================
 # Bandwidth Selection
 # =============================================================================

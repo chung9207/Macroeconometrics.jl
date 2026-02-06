@@ -14,8 +14,8 @@ using Random, Statistics, LinearAlgebra
     buf = IOBuffer()
     show(buf, fc)
     s = String(take!(buf))
-    @test occursin("FactorForecast", s)
-    @test occursin("h=5", s)
+    @test occursin("Factor Forecast", s)
+    @test occursin("5", s)
 end
 
 # =============================================================================

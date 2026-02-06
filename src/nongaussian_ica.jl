@@ -48,8 +48,22 @@ end
 
 function Base.show(io::IO, r::ICASVARResult{T}) where {T}
     n = size(r.B0, 1)
-    conv = r.converged ? "converged" : "not converged"
-    print(io, "ICASVARResult{$T}: n=$n, method=:$(r.method), $conv ($(r.iterations) iter)")
+    spec = Any[
+        "Method"     string(r.method);
+        "Variables"  n;
+        "Converged"  r.converged ? "Yes" : "No";
+        "Iterations" r.iterations;
+        "Objective"  _fmt(r.objective)
+    ]
+    pretty_table(io, spec;
+        title = "ICA-SVAR Identification Result",
+        column_labels = ["", ""],
+        alignment = [:l, :r],
+        table_format = _TABLE_FORMAT
+    )
+    _matrix_table(io, r.B0, "Structural Impact Matrix (B₀)";
+        row_labels=["Var $i" for i in 1:n],
+        col_labels=["Shock $j" for j in 1:n])
 end
 
 # =============================================================================

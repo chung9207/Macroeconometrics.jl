@@ -57,8 +57,24 @@ end
 
 function Base.show(io::IO, r::NonGaussianMLResult{T}) where {T}
     n = size(r.B0, 1)
-    conv = r.converged ? "converged" : "not converged"
-    print(io, "NonGaussianMLResult{$T}: n=$n, dist=:$(r.distribution), logL=$(round(r.loglik, digits=2)), $conv")
+    spec = Any[
+        "Distribution" string(r.distribution);
+        "Variables"    n;
+        "Log-likelihood" _fmt(r.loglik; digits=2);
+        "AIC"          _fmt(r.aic; digits=2);
+        "BIC"          _fmt(r.bic; digits=2);
+        "Converged"    r.converged ? "Yes" : "No";
+        "Iterations"   r.iterations
+    ]
+    pretty_table(io, spec;
+        title = "Non-Gaussian ML Identification Result",
+        column_labels = ["", ""],
+        alignment = [:l, :r],
+        table_format = _TABLE_FORMAT
+    )
+    _matrix_table(io, r.B0, "Structural Impact Matrix (B₀)";
+        row_labels=["Var $i" for i in 1:n],
+        col_labels=["Shock $j" for j in 1:n])
 end
 
 # =============================================================================

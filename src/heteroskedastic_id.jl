@@ -51,8 +51,22 @@ end
 
 function Base.show(io::IO, r::MarkovSwitchingSVARResult{T}) where {T}
     n = size(r.B0, 1)
-    conv = r.converged ? "converged" : "not converged"
-    print(io, "MarkovSwitchingSVARResult{$T}: n=$n, K=$(r.n_regimes), logL=$(round(r.loglik, digits=2)), $conv")
+    spec = Any[
+        "Variables"  n;
+        "Regimes"    r.n_regimes;
+        "Log-likelihood" _fmt(r.loglik; digits=2);
+        "Converged"  r.converged ? "Yes" : "No";
+        "Iterations" r.iterations
+    ]
+    pretty_table(io, spec;
+        title = "Markov-Switching SVAR Identification Result",
+        column_labels = ["", ""],
+        alignment = [:l, :r],
+        table_format = _TABLE_FORMAT
+    )
+    _matrix_table(io, r.B0, "Structural Impact Matrix (B₀)";
+        row_labels=["Var $i" for i in 1:n],
+        col_labels=["Shock $j" for j in 1:n])
 end
 
 """
@@ -83,8 +97,35 @@ end
 
 function Base.show(io::IO, r::GARCHSVARResult{T}) where {T}
     n = size(r.B0, 1)
-    conv = r.converged ? "converged" : "not converged"
-    print(io, "GARCHSVARResult{$T}: n=$n, logL=$(round(r.loglik, digits=2)), $conv")
+    spec = Any[
+        "Variables"      n;
+        "Log-likelihood" _fmt(r.loglik; digits=2);
+        "Converged"      r.converged ? "Yes" : "No";
+        "Iterations"     r.iterations
+    ]
+    pretty_table(io, spec;
+        title = "GARCH-SVAR Identification Result",
+        column_labels = ["", ""],
+        alignment = [:l, :r],
+        table_format = _TABLE_FORMAT
+    )
+    # GARCH parameters table
+    garch_data = Matrix{Any}(undef, n, 4)
+    for i in 1:n
+        garch_data[i, 1] = "Shock $i"
+        garch_data[i, 2] = _fmt(r.garch_params[i, 1])
+        garch_data[i, 3] = _fmt(r.garch_params[i, 2])
+        garch_data[i, 4] = _fmt(r.garch_params[i, 3])
+    end
+    pretty_table(io, garch_data;
+        title = "GARCH Parameters",
+        column_labels = ["", "ω", "α", "β"],
+        alignment = [:l, :r, :r, :r],
+        table_format = _TABLE_FORMAT
+    )
+    _matrix_table(io, r.B0, "Structural Impact Matrix (B₀)";
+        row_labels=["Var $i" for i in 1:n],
+        col_labels=["Shock $j" for j in 1:n])
 end
 
 """
@@ -121,8 +162,23 @@ end
 
 function Base.show(io::IO, r::SmoothTransitionSVARResult{T}) where {T}
     n = size(r.B0, 1)
-    conv = r.converged ? "converged" : "not converged"
-    print(io, "SmoothTransitionSVARResult{$T}: n=$n, γ=$(round(r.gamma, digits=2)), $conv")
+    spec = Any[
+        "Variables"      n;
+        "γ (speed)"      _fmt(r.gamma; digits=2);
+        "Threshold"      _fmt(r.threshold; digits=4);
+        "Log-likelihood" _fmt(r.loglik; digits=2);
+        "Converged"      r.converged ? "Yes" : "No";
+        "Iterations"     r.iterations
+    ]
+    pretty_table(io, spec;
+        title = "Smooth-Transition SVAR Identification Result",
+        column_labels = ["", ""],
+        alignment = [:l, :r],
+        table_format = _TABLE_FORMAT
+    )
+    _matrix_table(io, r.B0, "Structural Impact Matrix (B₀)";
+        row_labels=["Var $i" for i in 1:n],
+        col_labels=["Shock $j" for j in 1:n])
 end
 
 """
@@ -150,7 +206,20 @@ end
 function Base.show(io::IO, r::ExternalVolatilitySVARResult{T}) where {T}
     n = size(r.B0, 1)
     K = length(r.Sigma_regimes)
-    print(io, "ExternalVolatilitySVARResult{$T}: n=$n, K=$K, logL=$(round(r.loglik, digits=2))")
+    spec = Any[
+        "Variables"      n;
+        "Regimes"        K;
+        "Log-likelihood" _fmt(r.loglik; digits=2)
+    ]
+    pretty_table(io, spec;
+        title = "External Volatility SVAR Identification Result",
+        column_labels = ["", ""],
+        alignment = [:l, :r],
+        table_format = _TABLE_FORMAT
+    )
+    _matrix_table(io, r.B0, "Structural Impact Matrix (B₀)";
+        row_labels=["Var $i" for i in 1:n],
+        col_labels=["Shock $j" for j in 1:n])
 end
 
 # =============================================================================
