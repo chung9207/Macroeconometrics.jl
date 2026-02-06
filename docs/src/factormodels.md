@@ -20,7 +20,9 @@ fm = estimate_factors(X, r; standardize=true)                       # Static fac
 ic = ic_criteria(X, 10)                                             # Bai-Ng IC for factor count
 dfm = estimate_dynamic_factors(X, r, p; method=:twostep)            # Dynamic factor model
 gdfm = estimate_gdfm(X, q; kernel=:bartlett)                        # Generalized DFM (spectral)
-fc = forecast(dfm, h)                                               # DFM forecasting
+fc = forecast(fm, h; ci_method=:theoretical)                        # Static FM forecast with analytical CIs
+fc = forecast(dfm, h; ci_method=:bootstrap, n_boot=1000)            # DFM forecast with bootstrap CIs
+fc = forecast(gdfm, h; ci_method=:theoretical)                      # GDFM forecast with analytical CIs
 ```
 
 ---
@@ -340,6 +342,66 @@ irf_favar = irf(favar_model, H; method=:cholesky)
 
 ---
 
+## Forecasting with Static Factor Models
+
+### Forecast Method
+
+The static factor model does not directly specify factor dynamics, but forecasting is possible by fitting a VAR(p) on the extracted factors:
+
+```math
+\hat{F}_{T+h|T} = \hat{A}_1 \hat{F}_{T+h-1|T} + \cdots + \hat{A}_p \hat{F}_{T+h-p|T}
+```
+
+Observable forecasts are obtained via the loading matrix:
+
+```math
+\hat{X}_{T+h|T} = \hat{\Lambda} \hat{F}_{T+h|T}
+```
+
+### Confidence Intervals
+
+**Theoretical CIs** use the VMA(``\infty``) representation of the factor VAR to compute the ``h``-step forecast error covariance analytically:
+
+```math
+\text{MSE}_h = \sum_{j=0}^{h-1} \Psi_j \Sigma_\eta \Psi_j'
+```
+
+where ``\Psi_j = J C^j`` are the VMA coefficient matrices from the companion form.
+
+**Bootstrap CIs** resample factor VAR residuals to construct simulated forecast paths and compute percentile intervals.
+
+### Julia Implementation
+
+```julia
+using MacroEconometricModels
+
+# Estimate static factor model
+fm = estimate_factors(X, 3)
+
+# Point forecast (fits VAR(1) on factors internally)
+fc = forecast(fm, 12)
+fc.factors       # 12×3 factor forecasts
+fc.observables   # 12×N observable forecasts
+
+# Forecast with theoretical (analytical) confidence intervals
+fc = forecast(fm, 12; ci_method=:theoretical, conf_level=0.95)
+fc.factors_lower   # 12×3 lower CI for factors
+fc.factors_upper   # 12×3 upper CI for factors
+fc.observables_se  # 12×N standard errors for observables
+
+# Forecast with bootstrap CIs
+fc = forecast(fm, 12; ci_method=:bootstrap, n_boot=1000, conf_level=0.90)
+
+# Use higher-order VAR for factor dynamics
+fc = forecast(fm, 12; p=2, ci_method=:theoretical)
+```
+
+The theoretical SEs increase with the forecast horizon, reflecting growing uncertainty. For stationary factor dynamics, the SEs converge to the unconditional forecast error standard deviation. Bootstrap CIs are preferred when the Gaussian assumption may not hold.
+
+**Reference**: Stock & Watson (2002b)
+
+---
+
 ## Asymptotic Theory
 
 ### Consistency of Factor Estimates
@@ -489,20 +551,55 @@ ic.BIC  # r×p matrix of BIC values
 
 ### Forecasting with DFM
 
+The DFM forecast extrapolates the factor VAR dynamics forward and projects to observables via the loading matrix. Four CI methods are available:
+
+| `ci_method` | Description | Best for |
+|-------------|-------------|----------|
+| `:none` | Point forecast only | Quick exploration |
+| `:theoretical` | Analytical VMA CIs (Gaussian) | Large samples, fast |
+| `:bootstrap` | Residual resampling | Non-Gaussian innovations |
+| `:simulation` | Monte Carlo draws from estimated model | Full uncertainty propagation |
+
 ```julia
 # Point forecasts h steps ahead
 fc = forecast(model, h)
-fc.factors      # h×r factor forecasts
-fc.observables  # h×N observable forecasts
+fc.factors       # h×r factor forecasts
+fc.observables   # h×N observable forecasts
 
-# Forecasts with confidence intervals
-fc = forecast(model, h;
-    ci_level = 0.90,
-    n_sim = 1000
-)
-fc.factors_lower, fc.factors_upper      # Factor CIs
-fc.observables_lower, fc.observables_upper  # Observable CIs
+# Theoretical (analytical) confidence intervals
+fc = forecast(model, h; ci_method=:theoretical, conf_level=0.95)
+fc.factors_se           # h×r standard errors
+fc.observables_lower    # h×N lower CI bounds
+fc.observables_upper    # h×N upper CI bounds
+
+# Bootstrap confidence intervals
+fc = forecast(model, h; ci_method=:bootstrap, n_boot=1000, conf_level=0.90)
+
+# Simulation-based CIs (original method, also accessible via legacy ci=true)
+fc = forecast(model, h; ci_method=:simulation, n_boot=2000)
+fc = forecast(model, h; ci=true, ci_level=0.90)  # Legacy interface
 ```
+
+All forecast methods return a `FactorForecast` struct. When `ci_method=:none`, the CI and SE fields are zero matrices.
+
+### FactorForecast Return Values
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `factors` | `Matrix{T}` | ``h \times r`` factor point forecasts |
+| `observables` | `Matrix{T}` | ``h \times N`` observable point forecasts |
+| `factors_lower` | `Matrix{T}` | ``h \times r`` lower CI bounds for factors |
+| `factors_upper` | `Matrix{T}` | ``h \times r`` upper CI bounds for factors |
+| `observables_lower` | `Matrix{T}` | ``h \times N`` lower CI bounds for observables |
+| `observables_upper` | `Matrix{T}` | ``h \times N`` upper CI bounds for observables |
+| `factors_se` | `Matrix{T}` | ``h \times r`` factor forecast standard errors |
+| `observables_se` | `Matrix{T}` | ``h \times N`` observable forecast standard errors |
+| `horizon` | `Int` | Forecast horizon ``h`` |
+| `conf_level` | `T` | Confidence level (e.g., 0.95) |
+| `ci_method` | `Symbol` | CI method used (`:none`, `:theoretical`, `:bootstrap`, `:simulation`) |
+
+!!! note "Technical Note"
+    The theoretical CIs compute the ``h``-step forecast MSE via the VMA(``\infty``) representation: ``\text{MSE}_h = \sum_{j=0}^{h-1} \Psi_j \Sigma_\eta \Psi_j'`` where ``\Psi_j = J C^j`` with ``C`` the companion matrix and ``J`` the selector for the first ``r`` rows. Observable SEs combine factor uncertainty with idiosyncratic variance: ``\text{Var}(\hat{X}_{T+h}) = \Lambda \cdot \text{MSE}_h \cdot \Lambda' + \Sigma_e``.
 
 ### Stationarity Check
 
@@ -657,13 +754,25 @@ println("Variables with >50% common: ", length(well_explained))
 
 ### Forecasting with GDFM
 
-```julia
-# Forecast h steps ahead
-fc = forecast(model, h; method=:ar)
+The GDFM forecast uses AR(1) extrapolation of each factor series, with observable forecasts computed via the average spectral loadings. Confidence intervals are available via analytical or bootstrap methods.
 
-fc.common   # h×N common component forecast
-fc.factors  # h×q factor forecast
+```julia
+# Point forecast
+fc = forecast(model, h; method=:ar)
+fc.factors       # h×q factor forecasts
+fc.observables   # h×N observable forecasts
+
+# Theoretical CIs (closed-form AR(1) variance)
+fc = forecast(model, h; ci_method=:theoretical, conf_level=0.95)
+fc.factors_se           # h×q SEs (non-decreasing with horizon)
+fc.observables_lower    # h×N lower CI bounds
+fc.observables_upper    # h×N upper CI bounds
+
+# Bootstrap CIs (resample AR(1) residuals per factor)
+fc = forecast(model, h; ci_method=:bootstrap, n_boot=1000)
 ```
+
+The theoretical CIs use the closed-form AR(1) forecast variance: ``\text{Var}(\hat{F}_{T+h,i}) = \sigma_i^2 \sum_{j=0}^{h-1} \phi_i^{2j}`` where ``\phi_i`` and ``\sigma_i^2`` are the AR(1) coefficient and innovation variance for factor ``i``. Observable SEs combine factor uncertainty with idiosyncratic variance.
 
 ### Comparison: DFM vs GDFM
 

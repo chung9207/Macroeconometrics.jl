@@ -79,8 +79,17 @@ The API documentation is organized into the following pages:
 | Function | Description |
 |----------|-------------|
 | `estimate_factors(X, r; ...)` | Estimate r-factor model |
+| `estimate_dynamic_factors(X, r, p; ...)` | Dynamic factor model |
+| `estimate_gdfm(X, q; ...)` | Generalized dynamic factor model |
+| `forecast(fm, h; p=1, ci_method=:none)` | Static FM forecast (fits VAR(p) on factors) |
+| `forecast(dfm, h; ci_method=:none)` | DFM forecast (`:none/:theoretical/:bootstrap/:simulation`) |
+| `forecast(gdfm, h; ci_method=:none)` | GDFM forecast (`:none/:theoretical/:bootstrap`) |
 | `ic_criteria(X, r_max)` | Bai-Ng information criteria |
+| `ic_criteria_dynamic(X, max_r, max_p)` | DFM factor/lag selection |
+| `ic_criteria_gdfm(X, max_q)` | GDFM dynamic factor selection |
 | `scree_plot_data(model)` | Data for scree plot |
+| `is_stationary(dfm)` | Check DFM factor VAR stationarity |
+| `common_variance_share(gdfm)` | GDFM common variance share per variable |
 
 ### Diagnostic Functions
 

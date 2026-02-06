@@ -129,9 +129,27 @@ Order   = [:function]
 
 ## Factor Models
 
+### Static Factor Model
+
 ```@autodocs
 Modules = [MacroEconometricModels]
-Pages   = ["factormodels.jl"]
+Pages   = ["staticfactor.jl"]
+Order   = [:function]
+```
+
+### Dynamic Factor Model
+
+```@autodocs
+Modules = [MacroEconometricModels]
+Pages   = ["dynamicfactor.jl"]
+Order   = [:function]
+```
+
+### Generalized Dynamic Factor Model
+
+```@autodocs
+Modules = [MacroEconometricModels]
+Pages   = ["generalizedfactor.jl"]
 Order   = [:function]
 ```
 

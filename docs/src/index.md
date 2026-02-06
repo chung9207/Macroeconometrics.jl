@@ -13,7 +13,7 @@
 - **Structural Identification**: Multiple identification schemes including Cholesky, sign restrictions, long-run (Blanchard-Quah), and narrative restrictions
 - **Bayesian VAR**: Minnesota/Litterman prior with automatic hyperparameter optimization via marginal likelihood (Giannone, Lenza & Primiceri, 2015)
 - **Local Projections**: Jordà (2005) methodology with extensions for IV (Stock & Watson, 2018), smooth LP (Barnichon & Brownlees, 2019), state-dependence (Auerbach & Gorodnichenko, 2013), and propensity score methods (Angrist, Jordà & Kuersteiner, 2018)
-- **Factor Models**: Static, dynamic, and generalized dynamic factor models with Bai & Ng (2002) information criteria
+- **Factor Models**: Static, dynamic, and generalized dynamic factor models with Bai & Ng (2002) information criteria; unified forecasting with theoretical (analytical) and bootstrap confidence intervals
 - **Hypothesis Tests**: Comprehensive unit root tests (ADF, KPSS, Phillips-Perron, Zivot-Andrews, Ng-Perron) and Johansen cointegration test
 - **GMM Estimation**: Flexible GMM framework with one-step, two-step, and iterated estimation
 - **Robust Inference**: Newey-West, White, and Driscoll-Kraay HAC standard errors with automatic bandwidth selection
@@ -125,6 +125,12 @@ fm = estimate_factors(X, r_optimal)
 
 # Extract factors for use in FAVAR
 factors = fm.factors
+
+# Forecast with confidence intervals (all 3 model types supported)
+fc = forecast(fm, 12; ci_method=:theoretical)
+fc.observables       # 12×N forecasted observables
+fc.observables_lower # lower CI bounds
+fc.observables_upper # upper CI bounds
 ```
 
 ### Unit Root Tests
@@ -191,7 +197,7 @@ The package is organized into the following modules:
 | `arima_forecast.jl` | Multi-step forecasting with confidence intervals |
 | `arima_selection.jl` | Order selection (`select_arima_order`, `auto_arima`, `ic_table`) |
 | `lp_*.jl` | Local Projections suite |
-| `factormodels.jl` | Static, dynamic, and generalized dynamic factor models |
+| `factormodels.jl` | Static, dynamic, and generalized dynamic factor models with forecasting and CIs |
 | `unitroot.jl` | Unit root and cointegration tests (ADF, KPSS, PP, ZA, Ng-Perron, Johansen) |
 | `gmm.jl` | Generalized Method of Moments |
 | `utils.jl` | Numerical utilities |

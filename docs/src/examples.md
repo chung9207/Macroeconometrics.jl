@@ -9,7 +9,7 @@ This chapter provides comprehensive worked examples demonstrating the main funct
 | 1 | Three-Variable VAR | `estimate_var`, `irf`, `fevd` | Frequentist VAR with Cholesky and sign restriction identification |
 | 2 | Bayesian VAR with Minnesota Prior | `estimate_bvar`, `optimize_hyperparameters` | Minnesota prior, MCMC estimation, credible intervals |
 | 3 | Local Projections | `estimate_lp`, `estimate_lp_iv`, `estimate_smooth_lp` | Standard, IV, smooth, and state-dependent LP |
-| 4 | Factor Model for Large Panels | `estimate_factors`, `ic_criteria` | Large panel factor extraction, Bai-Ng criteria, FAVAR |
+| 4 | Factor Model for Large Panels | `estimate_factors`, `ic_criteria`, `forecast` | Large panel factor extraction, Bai-Ng criteria, forecasting with CIs |
 | 5 | GMM Estimation | `estimate_gmm`, `j_test` | IV regression via GMM, overidentification test |
 | 6 | Complete Workflow | Multiple | Lag selection → VAR → BVAR → LP comparison |
 | 7 | Unit Root Testing | `adf_test`, `kpss_test`, `johansen_test` | ADF, KPSS, Zivot-Andrews, Ng-Perron, Johansen |
@@ -451,6 +451,57 @@ end
 ```
 
 The Bai-Ng information criteria select the number of factors by balancing fit against complexity. IC2 tends to perform best in simulations. High correlations between estimated and true factors (above 0.9) confirm reliable factor recovery. The R² values show how well the common factors explain each variable; variables with low R² are primarily driven by idiosyncratic shocks and contribute less to the common component.
+
+### Factor Model Forecasting
+
+```julia
+# Forecast 12 steps ahead with theoretical (analytical) CIs
+fc = forecast(fm, 12; ci_method=:theoretical, conf_level=0.95)
+
+println("\nFactor forecast with 95% CIs:")
+println("  Factors: ", size(fc.factors))        # 12×r
+println("  Observables: ", size(fc.observables)) # 12×N
+println("  CI method: ", fc.ci_method)
+
+# SEs should increase with horizon (growing uncertainty)
+println("\nFactor 1 SE by horizon:")
+for h in [1, 4, 8, 12]
+    println("  h=$h: SE=$(round(fc.factors_se[h, 1], digits=4))")
+end
+
+# Bootstrap CIs (non-parametric, no Gaussian assumption)
+fc_boot = forecast(fm, 12; ci_method=:bootstrap, n_boot=500, conf_level=0.90)
+
+println("\nBootstrap vs theoretical CI widths (Factor 1, h=12):")
+width_theory = fc.factors_upper[12, 1] - fc.factors_lower[12, 1]
+width_boot = fc_boot.factors_upper[12, 1] - fc_boot.factors_lower[12, 1]
+println("  Theoretical: ", round(width_theory, digits=3))
+println("  Bootstrap: ", round(width_boot, digits=3))
+```
+
+The theoretical SEs grow monotonically with the forecast horizon for stationary factor dynamics, reflecting accumulating forecast uncertainty. Bootstrap CIs are useful when factor innovations may be non-Gaussian or exhibit conditional heteroskedasticity.
+
+### Dynamic Factor Model Forecasting
+
+```julia
+# Estimate DFM with VAR(2) factor dynamics
+dfm = estimate_dynamic_factors(X, r_opt, 2)
+
+# Forecast with all CI methods
+fc_none = forecast(dfm, 12)                                    # Point only
+fc_theo = forecast(dfm, 12; ci_method=:theoretical)            # Analytical CIs
+fc_boot = forecast(dfm, 12; ci_method=:bootstrap, n_boot=500)  # Bootstrap CIs
+fc_sim  = forecast(dfm, 12; ci_method=:simulation, n_boot=500) # Simulation CIs
+
+println("\nDFM forecast comparison (Observable 1, h=12):")
+println("  Point forecast: ", round(fc_none.observables[12, 1], digits=3))
+println("  Theoretical CI: [", round(fc_theo.observables_lower[12, 1], digits=3),
+        ", ", round(fc_theo.observables_upper[12, 1], digits=3), "]")
+println("  Bootstrap CI:   [", round(fc_boot.observables_lower[12, 1], digits=3),
+        ", ", round(fc_boot.observables_upper[12, 1], digits=3), "]")
+```
+
+The DFM supports four CI methods: `:theoretical` (fastest, assumes Gaussian innovations), `:bootstrap` (residual resampling), `:simulation` (full Monte Carlo draws), and the legacy `ci=true` interface which maps to `:simulation`.
 
 ---
 

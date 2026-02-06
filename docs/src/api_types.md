@@ -62,6 +62,7 @@ AbstractHistoricalDecomposition
 FactorModel
 DynamicFactorModel
 GeneralizedDynamicFactorModel
+FactorForecast
 AbstractFactorModel
 ```
 
@@ -152,6 +153,8 @@ AbstractFactorModel
 ├── FactorModel{T}
 ├── DynamicFactorModel{T}
 └── GeneralizedDynamicFactorModel{T}
+
+FactorForecast{T}
 
 AbstractLPModel
 ├── LPModel{T}
