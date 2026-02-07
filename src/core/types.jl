@@ -54,6 +54,9 @@ abstract type AbstractNormalityTest <: StatsAPI.HypothesisTest end
 """Abstract supertype for non-Gaussian SVAR identification results."""
 abstract type AbstractNonGaussianSVAR end
 
+"""Abstract supertype for univariate volatility models (ARCH/GARCH/SV)."""
+abstract type AbstractVolatilityModel <: StatsAPI.RegressionModel end
+
 # =============================================================================
 # Abstract Types - Analysis Result Types
 # =============================================================================

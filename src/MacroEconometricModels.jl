@@ -122,6 +122,23 @@ include("arima/estimation.jl")
 include("arima/forecast.jl")
 include("arima/selection.jl")
 
+# ARCH models
+include("arch/types.jl")
+include("arch/estimation.jl")
+include("arch/forecast.jl")
+include("arch/diagnostics.jl")
+
+# GARCH models
+include("garch/types.jl")
+include("garch/estimation.jl")
+include("garch/forecast.jl")
+include("garch/diagnostics.jl")
+
+# Stochastic Volatility models
+include("sv/types.jl")
+include("sv/estimation.jl")
+include("sv/forecast.jl")
+
 # Covariance estimators
 include("core/covariance.jl")
 
@@ -257,12 +274,11 @@ export historical_decomposition
 export contribution, total_shock_contribution, verify_decomposition
 
 # =============================================================================
-# Exports - Summary Tables and Result Interface
+# Exports - Report, Tables, and Result Interface
 # =============================================================================
 
+export report
 export table, print_table
-# NOTE: `summary` is NOT exported to avoid conflict with `Base.summary`.
-# Use `MacroEconometricModels.summary(obj)` or import explicitly.
 export point_estimate, has_uncertainty, uncertainty_bounds
 export set_display_backend, get_display_backend
 
@@ -394,6 +410,30 @@ export identify_smooth_transition, identify_external_volatility
 export test_identification_strength, test_shock_gaussianity
 export test_gaussian_vs_nongaussian, test_shock_independence
 export test_overidentification
+
+# =============================================================================
+# Exports - Volatility Models (ARCH/GARCH/SV)
+# =============================================================================
+
+# Abstract type
+export AbstractVolatilityModel
+
+# ARCH types and estimation
+export ARCHModel, VolatilityForecast
+export estimate_arch
+export arch_lm_test, ljung_box_squared
+
+# GARCH types and estimation
+export GARCHModel, EGARCHModel, GJRGARCHModel
+export estimate_garch, estimate_egarch, estimate_gjr_garch
+export news_impact_curve
+
+# SV types and estimation
+export SVModel
+export estimate_sv
+
+# Type accessors
+export arch_order, garch_order, persistence, halflife, unconditional_variance
 
 # =============================================================================
 # Exports - StatsAPI Interface
