@@ -35,7 +35,7 @@ using StatsAPI
         @test lp_irf_result isa LPImpulseResponse
 
         # Bayesian estimation (reduced samples for speed)
-        chain = estimate_bvar(Y, 2; prior=:minnesota, n_samples=100, n_adapts=50)
+        chain = estimate_bvar(Y, 2; prior=:minnesota, n_samples=50, n_adapts=20)
         @test chain isa Chains
     end
 
@@ -136,8 +136,8 @@ using StatsAPI
 
         # BVAR estimation (reduced samples for speed)
         chain = estimate_bvar(Y, p;
-            n_samples=100,
-            n_adapts=50,
+            n_samples=50,
+            n_adapts=20,
             prior=:minnesota,
             hyper=best_hyper
         )
@@ -506,7 +506,7 @@ using StatsAPI
         best_hyper = optimize_hyperparameters(Y, p; grid_size=5)
         @test best_hyper isa MinnesotaHyperparameters
 
-        chain = estimate_bvar(Y, p; n_samples=100, n_adapts=50,
+        chain = estimate_bvar(Y, p; n_samples=50, n_adapts=20,
                               prior=:minnesota, hyper=best_hyper)
         @test chain isa Chains
 

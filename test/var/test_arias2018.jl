@@ -556,8 +556,8 @@ end
     @testset "Basic Bayesian Sign Restrictions" begin
         Random.seed!(11111)
 
-        # Generate simple VAR data
-        T_obs, n, p = 200, 2, 1
+        # Generate simple VAR data (reduced from T=200)
+        T_obs, n, p = 100, 2, 1
         Y = zeros(T_obs, n)
         for t in 2:T_obs
             Y[t, :] = 0.5 * Y[t-1, :] + randn(n)
@@ -609,7 +609,7 @@ end
     @testset "Bayesian Zero Restrictions" begin
         Random.seed!(22222)
 
-        T_obs, n, p = 200, 3, 1
+        T_obs, n, p = 100, 3, 1
         Y = randn(T_obs, n)
 
         try
@@ -638,7 +638,7 @@ end
     @testset "Bayesian Mixed Zero and Sign Restrictions" begin
         Random.seed!(33333)
 
-        T_obs, n, p = 200, 2, 1
+        T_obs, n, p = 100, 2, 1
         Y = randn(T_obs, n)
 
         try
@@ -663,7 +663,7 @@ end
     @testset "Bayesian Identification without Data" begin
         Random.seed!(44444)
 
-        T_obs, n, p = 150, 2, 1
+        T_obs, n, p = 100, 2, 1
         Y = randn(T_obs, n)
 
         try
@@ -688,7 +688,7 @@ end
     @testset "Bayesian Custom Quantiles" begin
         Random.seed!(55555)
 
-        T_obs, n, p = 150, 2, 1
+        T_obs, n, p = 100, 2, 1
         Y = randn(T_obs, n)
 
         try
@@ -720,7 +720,7 @@ end
     @testset "Bayesian Single Variable" begin
         Random.seed!(66666)
 
-        T_obs, n, p = 100, 1, 1
+        T_obs, n, p = 80, 1, 1
         Y = randn(T_obs, n)
 
         try

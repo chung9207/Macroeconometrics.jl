@@ -494,65 +494,61 @@ end
 
 @testset "SV estimation" begin
     Random.seed!(808)
-    # Simulate SV data
-    n = 200
+    # Simulate SV data (reduced from n=200)
+    n_sv = 100
     mu_true = -1.0
     phi_true = 0.95
     sigma_eta_true = 0.2
-    h = zeros(n)
+    h = zeros(n_sv)
     h[1] = mu_true
-    for t in 2:n
+    for t in 2:n_sv
         h[t] = mu_true + phi_true * (h[t-1] - mu_true) + sigma_eta_true * randn()
     end
-    y_sv = exp.(h ./ 2) .* randn(n)
+    y_sv = exp.(h ./ 2) .* randn(n_sv)
+
+    # Estimate :normal once and reuse across subtests
+    Random.seed!(909)
+    m_normal = estimate_sv(y_sv; n_samples=100, n_adapts=50, dist=:normal)
 
     @testset "Basic SV" begin
-        Random.seed!(909)
-        m = estimate_sv(y_sv; n_samples=200, n_adapts=100, dist=:normal)
-        @test m isa SVModel{Float64}
-        @test nobs(m) == n
-        @test length(m.mu_post) == 200
-        @test length(m.phi_post) == 200
-        @test length(m.sigma_eta_post) == 200
-        @test length(m.volatility_mean) == n
-        @test size(m.volatility_quantiles) == (n, 3)
-        @test all(m.volatility_mean .> 0)
-        @test m.dist == :normal
-        @test m.leverage == false
+        @test m_normal isa SVModel{Float64}
+        @test nobs(m_normal) == n_sv
+        @test length(m_normal.mu_post) == 100
+        @test length(m_normal.phi_post) == 100
+        @test length(m_normal.sigma_eta_post) == 100
+        @test length(m_normal.volatility_mean) == n_sv
+        @test size(m_normal.volatility_quantiles) == (n_sv, 3)
+        @test all(m_normal.volatility_mean .> 0)
+        @test m_normal.dist == :normal
+        @test m_normal.leverage == false
     end
 
     @testset "SV persistence" begin
-        Random.seed!(909)
-        m = estimate_sv(y_sv; n_samples=200, n_adapts=100)
-        phi_mean = mean(m.phi_post)
+        phi_mean = mean(m_normal.phi_post)
         # With high persistence data, posterior should be near unit
         @test abs(phi_mean) < 1.0
         @test phi_mean > 0.0  # Should be positive
     end
 
     @testset "SV StatsAPI" begin
-        Random.seed!(909)
-        m = estimate_sv(y_sv; n_samples=200, n_adapts=100)
-        @test nobs(m) == n
-        @test length(coef(m)) == 3  # mu, phi, sigma_eta
-        @test length(residuals(m)) == n
-        @test length(predict(m)) == n
-        @test islinear(m) == false
+        @test nobs(m_normal) == n_sv
+        @test length(coef(m_normal)) == 3  # mu, phi, sigma_eta
+        @test length(residuals(m_normal)) == n_sv
+        @test length(predict(m_normal)) == n_sv
+        @test islinear(m_normal) == false
     end
 
     @testset "SV posterior shapes" begin
-        Random.seed!(909)
-        m = estimate_sv(y_sv; n_samples=200, n_adapts=100)
-        @test all(m.sigma_eta_post .> 0)  # sigma_eta is positive
-        @test all(abs.(m.phi_post) .< 1.0)  # phi in (-1, 1)
+        @test all(m_normal.sigma_eta_post .> 0)  # sigma_eta is positive
+        @test all(abs.(m_normal.phi_post) .< 1.0)  # phi in (-1, 1)
     end
 
     @testset "SV Student-t" begin
         Random.seed!(1010)
-        m = estimate_sv(y_sv; n_samples=200, n_adapts=100, dist=:studentt)
-        @test m isa SVModel{Float64}
-        @test m.dist == :studentt
-        @test all(m.volatility_mean .> 0)
+        m_t = estimate_sv(y_sv; n_samples=100, n_adapts=50, dist=:studentt)
+        @test m_t isa SVModel{Float64}
+        @test m_t.dist == :studentt
+        @test all(m_t.volatility_mean .> 0)
     end
 
     @testset "SV input validation" begin
@@ -561,8 +557,7 @@ end
 
     @testset "SV forecast" begin
         Random.seed!(1111)
-        m = estimate_sv(y_sv; n_samples=200, n_adapts=100)
-        fc = forecast(m, 5)
+        fc = forecast(m_normal, 5)
         @test fc isa VolatilityForecast{Float64}
         @test fc.model_type == :sv
         @test fc.horizon == 5
@@ -628,7 +623,7 @@ end
     @testset "SVModel display" begin
         Random.seed!(1313)
         y_sv = randn(100) .* exp.(cumsum(0.1 .* randn(100)) ./ 2)
-        m = estimate_sv(y_sv; n_samples=200, n_adapts=100)
+        m = estimate_sv(y_sv; n_samples=50, n_adapts=20)
         io = IOBuffer()
         show(io, m)
         output = String(take!(io))

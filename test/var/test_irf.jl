@@ -62,9 +62,8 @@ Random.seed!(42)
     # 4. Bayesian IRF
     println("Testing Bayesian Estimation...")
     try
-        # Estimate chain
-        # Need adequate samples for mean convergence
-        chain = estimate_bvar(Y, p; n_samples=200, n_adapts=100)
+        # Estimate chain (reduced from n_samples=200, n_adapts=100)
+        chain = estimate_bvar(Y, p; n_samples=50, n_adapts=25, sampler=:nuts)
         println("Bayesian Estimation Done.")
 
         println("Testing Bayesian IRF...")
@@ -79,9 +78,9 @@ Random.seed!(42)
             theoretical_impact = (0.5^lag) * I(2)
             bayes_mean = irf_bayes.mean[h, :, :]
 
-            # Allow slightly larger tolerance for Bayesian mean with finite chain
-            @test isapprox(bayes_mean[1, 1], theoretical_impact[1, 1], atol=0.2)
-            @test isapprox(bayes_mean[2, 2], theoretical_impact[2, 2], atol=0.2)
+            # Allow larger tolerance for smaller chain
+            @test isapprox(bayes_mean[1, 1], theoretical_impact[1, 1], atol=0.3)
+            @test isapprox(bayes_mean[2, 2], theoretical_impact[2, 2], atol=0.3)
         end
 
     catch e

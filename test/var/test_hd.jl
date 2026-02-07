@@ -159,7 +159,7 @@ using Random
     @testset "Bayesian Historical Decomposition" begin
         Random.seed!(111)
 
-        T_obs = 100
+        T_obs = 80
         n = 2
         p = 1
 
@@ -167,7 +167,7 @@ using Random
         T_eff = T_obs - p
 
         try
-            chain = estimate_bvar(Y, p; n_samples=100, n_adapts=50)
+            chain = estimate_bvar(Y, p; n_samples=50, sampler=:is)
 
             hd = historical_decomposition(chain, p, n, T_eff;
                                           data=Y, method=:cholesky,

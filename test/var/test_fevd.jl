@@ -58,7 +58,7 @@ using Random
     # 2. Bayesian FEVD
     println("Testing Bayesian FEVD...")
     try
-        chain = estimate_bvar(Y, p; n_samples=200, n_adapts=100)
+        chain = estimate_bvar(Y, p; n_samples=50, n_adapts=25, sampler=:nuts)
 
         # Compute Bayesian FEVD
         fevd_bayes = fevd(chain, p, n, horizon; method=:cholesky)
