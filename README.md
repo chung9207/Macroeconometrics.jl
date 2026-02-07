@@ -6,7 +6,7 @@
 [![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18439170.svg)](https://doi.org/10.5281/zenodo.18439170)
 
-A comprehensive Julia package for macroeconomic time series analysis. Provides VAR, Bayesian VAR, Local Projections, Factor Models, ARIMA, GMM, ARCH/GARCH/Stochastic Volatility estimation, structural identification (including non-Gaussian and heteroskedasticity-based methods), hypothesis testing, and publication-quality output with multi-format bibliographic references.
+A comprehensive Julia package for macroeconomic time series analysis. Provides VAR, VECM, Bayesian VAR, Local Projections, Factor Models, ARIMA, time series filters, GMM, ARCH/GARCH/Stochastic Volatility estimation, structural identification (including non-Gaussian and heteroskedasticity-based methods), hypothesis testing, and publication-quality output with multi-format bibliographic references.
 
 ## Features
 
@@ -14,6 +14,12 @@ A comprehensive Julia package for macroeconomic time series analysis. Provides V
 - **ARIMA** - AR, MA, ARMA, ARIMA estimation via CSS, exact MLE (Kalman filter), or CSS-MLE
 - **Automatic order selection** - `auto_arima` with grid search over (p,d,q), AIC/BIC information criteria
 - **Forecasting** - Multi-step ahead with confidence intervals via psi-weight accumulation
+- **Time Series Filters** - Trend-cycle decomposition:
+  - Hodrick-Prescott filter (sparse pentadiagonal Cholesky)
+  - Hamilton (2018) regression filter
+  - Beveridge-Nelson decomposition (ARIMA psi-weights)
+  - Baxter-King band-pass filter
+  - Boosted HP filter (Phillips & Shi 2021) with ADF/BIC/fixed stopping
 - **ARCH** - Engle (1982) ARCH(q) with MLE, ARCH-LM test, Ljung-Box squared residuals
 - **GARCH** - GARCH(p,q), EGARCH (Nelson 1991), GJR-GARCH (Glosten, Jagannathan & Runkle 1993)
 - **Stochastic Volatility** - Bayesian SV via MCMC (basic, leverage, Student-t variants)
@@ -22,6 +28,11 @@ A comprehensive Julia package for macroeconomic time series analysis. Provides V
 
 ### Multivariate Estimation
 - **Vector Autoregression (VAR)** - OLS estimation with lag order selection (AIC, BIC, HQ)
+- **Vector Error Correction Model (VECM)** - Johansen MLE and Engle-Granger two-step estimation
+  - Automatic cointegrating rank selection (trace/max-eigenvalue)
+  - VAR conversion (`to_var`) enabling all 18+ identification methods
+  - VECM-specific forecasting preserving cointegrating relationships
+  - Granger causality: short-run, long-run, and strong tests
 - **Bayesian VAR (BVAR)** - Minnesota priors with hyperparameter optimization (Giannone, Lenza & Primiceri 2015)
 - **Local Projections (LP)** - Jorda (2005) with extensions:
   - HAC standard errors (Newey-West, White, Driscoll-Kraay)
@@ -105,6 +116,62 @@ print_table(stdout, fevd_result, 1)
 
 # Bayesian estimation
 chain = estimate_bvar(Y, 2; prior=:minnesota)
+```
+
+### VECM Analysis
+
+```julia
+using MacroEconometricModels
+using Random
+
+Random.seed!(42)
+# Simulate cointegrated data
+T = 200
+e = randn(T, 2)
+x1 = cumsum(e[:, 1])
+x2 = x1 + 0.5 .* e[:, 2]  # cointegrated with x1
+Y = hcat(x1, x2)
+
+# Johansen cointegration test
+jt = johansen_test(Y, 2)
+
+# Estimate VECM with automatic rank selection
+vecm = estimate_vecm(Y, 2; rank=:auto)
+
+# Structural analysis via VAR conversion
+irf_result = irf(vecm, 20; method=:cholesky)
+fevd_result = fevd(vecm, 20)
+
+# VECM-specific forecasting
+fc = forecast(vecm, 12; ci_method=:bootstrap)
+
+# Granger causality (short-run, long-run, strong)
+gc = granger_causality_vecm(vecm, 1, 2)
+```
+
+### Time Series Filters
+
+```julia
+using MacroEconometricModels
+
+y = cumsum(randn(200))  # simulate I(1) series
+
+# Hodrick-Prescott filter
+hp = hp_filter(y; lambda=1600.0)
+trend(hp)  # trend component
+cycle(hp)  # cyclical component
+
+# Hamilton (2018) regression filter
+ham = hamilton_filter(y; h=8, p=4)
+
+# Beveridge-Nelson decomposition
+bn = beveridge_nelson(y; p=:auto, q=:auto)
+
+# Baxter-King band-pass filter
+bk = baxter_king(y; pl=6, pu=32, K=12)
+
+# Boosted HP (Phillips & Shi 2021)
+bhp = boosted_hp(y; lambda=1600.0, stopping=:BIC)
 ```
 
 ### ARIMA Modeling
@@ -268,6 +335,19 @@ Full documentation available at [https://chung9207.github.io/MacroEconometricMod
 - Lanne, Markku, Mika Meitz, and Pentti Saikkonen. 2017. "Identification and Estimation of Non-Gaussian Structural Vector Autoregressions." *Journal of Econometrics* 196 (2): 288–304. [https://doi.org/10.1016/j.jeconom.2016.06.002](https://doi.org/10.1016/j.jeconom.2016.06.002)
 - Lanne, Markku, and Helmut Lütkepohl. 2010. "Structural Vector Autoregressions with Nonnormal Residuals." *Journal of Business & Economic Statistics* 28 (1): 159–168. [https://doi.org/10.1198/jbes.2009.06003](https://doi.org/10.1198/jbes.2009.06003)
 - Rigobon, Roberto. 2003. "Identification through Heteroskedasticity." *Review of Economics and Statistics* 85 (4): 777–792. [https://doi.org/10.1162/003465303772815727](https://doi.org/10.1162/003465303772815727)
+
+### VECM and Cointegration
+
+- Engle, Robert F., and Clive W. J. Granger. 1987. "Co-Integration and Error Correction: Representation, Estimation, and Testing." *Econometrica* 55 (2): 251–276. [https://doi.org/10.2307/1913236](https://doi.org/10.2307/1913236)
+- Johansen, Søren. 1991. "Estimation and Hypothesis Testing of Cointegration Vectors in Gaussian Vector Autoregressive Models." *Econometrica* 59 (6): 1551–1580. [https://doi.org/10.2307/2938278](https://doi.org/10.2307/2938278)
+
+### Time Series Filters
+
+- Baxter, Marianne, and Robert G. King. 1999. "Measuring Business Cycles: Approximate Band-Pass Filters for Economic Time Series." *Review of Economics and Statistics* 81 (4): 575–593. [https://doi.org/10.1162/003465399558454](https://doi.org/10.1162/003465399558454)
+- Beveridge, Stephen, and Charles R. Nelson. 1981. "A New Approach to Decomposition of Economic Time Series into Permanent and Transitory Components with Particular Attention to Measurement of the 'Business Cycle'." *Journal of Monetary Economics* 7 (2): 151–174. [https://doi.org/10.1016/0304-3932(81)90040-4](https://doi.org/10.1016/0304-3932(81)90040-4)
+- Hamilton, James D. 2018. "Why You Should Never Use the Hodrick-Prescott Filter." *Review of Economics and Statistics* 100 (5): 831–843. [https://doi.org/10.1162/rest_a_00706](https://doi.org/10.1162/rest_a_00706)
+- Hodrick, Robert J., and Edward C. Prescott. 1997. "Postwar U.S. Business Cycles: An Empirical Investigation." *Journal of Money, Credit and Banking* 29 (1): 1–16. [https://doi.org/10.2307/2953682](https://doi.org/10.2307/2953682)
+- Phillips, Peter C. B., and Zhentao Shi. 2021. "Boosting: Why You Can Use the HP Filter." *International Economic Review* 62 (2): 521–570. [https://doi.org/10.1111/iere.12495](https://doi.org/10.1111/iere.12495)
 
 ### Unit Root and Cointegration Tests
 
