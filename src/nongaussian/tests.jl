@@ -36,16 +36,23 @@ struct IdentifiabilityTestResult{T<:AbstractFloat}
 end
 
 function Base.show(io::IO, r::IdentifiabilityTestResult{T}) where {T}
+    stars = _significance_stars(r.pvalue)
+    status_str = r.identified ? "Identified" : "Not identified"
     data = Any[
-        "Statistic" _fmt(r.statistic);
-        "P-value"   _format_pvalue(r.pvalue);
-        "Status"    r.identified ? "Identified" : "Not identified"
+        "H₀"            "Structural shocks are not identified";
+        "H₁"            "Structural shocks are identified";
+        "Test Statistic" string(_fmt(r.statistic), " ", stars);
+        "P-value"        _format_pvalue(r.pvalue);
+        "Status"         status_str
     ]
     _pretty_table(io, data;
-        title = "IdentifiabilityTest: $(r.test_name)",
+        title = "Identifiability Test: $(r.test_name)",
         column_labels = ["", ""],
         alignment = [:l, :r],
     )
+    conc_data = Any["Conclusion" (r.identified ? "Evidence supports identification" : "Identification conditions may not hold");
+                    "Note" "*** p<0.01, ** p<0.05, * p<0.10"]
+    _pretty_table(io, conc_data; column_labels=["",""], alignment=[:l,:l])
 end
 
 # =============================================================================

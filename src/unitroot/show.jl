@@ -239,14 +239,14 @@ function Base.show(io::IO, r::NgPerronResult)
     mpt_reject_10 = r.MPT < r.critical_values[:MPT][10]
     mpt_stars = mpt_reject_1 ? "***" : (mpt_reject_5 ? "**" : (mpt_reject_10 ? "*" : ""))
     stats_data = Any[
-        "MZα" string(round(r.MZa, digits=4), " ", mza_stars) round(r.critical_values[:MZa][5], digits=2) round(r.critical_values[:MZa][10], digits=2) round(r.critical_values[:MZa][1], digits=2);
-        "MZₜ" string(round(r.MZt, digits=4), " ", mzt_stars) round(r.critical_values[:MZt][5], digits=2) round(r.critical_values[:MZt][10], digits=2) round(r.critical_values[:MZt][1], digits=2);
-        "MSB" string(round(r.MSB, digits=4), " ", msb_stars) round(r.critical_values[:MSB][5], digits=3) round(r.critical_values[:MSB][10], digits=3) round(r.critical_values[:MSB][1], digits=3);
-        "MPT" string(round(r.MPT, digits=4), " ", mpt_stars) round(r.critical_values[:MPT][5], digits=2) round(r.critical_values[:MPT][10], digits=2) round(r.critical_values[:MPT][1], digits=2)
+        "MZα" string(round(r.MZa, digits=4), " ", mza_stars) round(r.critical_values[:MZa][1], digits=2) round(r.critical_values[:MZa][5], digits=2) round(r.critical_values[:MZa][10], digits=2);
+        "MZₜ" string(round(r.MZt, digits=4), " ", mzt_stars) round(r.critical_values[:MZt][1], digits=2) round(r.critical_values[:MZt][5], digits=2) round(r.critical_values[:MZt][10], digits=2);
+        "MSB" string(round(r.MSB, digits=4), " ", msb_stars) round(r.critical_values[:MSB][1], digits=3) round(r.critical_values[:MSB][5], digits=3) round(r.critical_values[:MSB][10], digits=3);
+        "MPT" string(round(r.MPT, digits=4), " ", mpt_stars) round(r.critical_values[:MPT][1], digits=2) round(r.critical_values[:MPT][5], digits=2) round(r.critical_values[:MPT][10], digits=2)
     ]
     _pretty_table(io, stats_data;
         title = "Test Statistics",
-        column_labels = ["Statistic", "Value", "5% CV", "10% CV", "1% CV"],
+        column_labels = ["Statistic", "Value", "1% CV", "5% CV", "10% CV"],
         alignment = [:l, :r, :r, :r, :r],
     )
     n_reject_5 = sum([mza_reject_5, mzt_reject_5, msb_reject_5, mpt_reject_5])

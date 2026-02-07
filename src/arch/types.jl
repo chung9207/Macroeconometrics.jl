@@ -161,22 +161,24 @@ function Base.show(io::IO, f::VolatilityForecast)
     ci_pct = round(Int, 100 * f.conf_level)
     n_show = min(10, h)
     nrows = h > n_show ? n_show + 1 : n_show
-    data = Matrix{Any}(undef, nrows, 4)
+    data = Matrix{Any}(undef, nrows, 5)
     for i in 1:n_show
         data[i, 1] = i
         data[i, 2] = _fmt(f.forecast[i])
-        data[i, 3] = _fmt(f.ci_lower[i])
-        data[i, 4] = _fmt(f.ci_upper[i])
+        data[i, 3] = _fmt(f.se[i])
+        data[i, 4] = _fmt(f.ci_lower[i])
+        data[i, 5] = _fmt(f.ci_upper[i])
     end
     if h > n_show
         data[nrows, 1] = "..."
         data[nrows, 2] = "($(h - n_show) more)"
         data[nrows, 3] = ""
         data[nrows, 4] = ""
+        data[nrows, 5] = ""
     end
     _pretty_table(io, data;
         title = "Volatility Forecast ($(f.model_type), h=$h, $(ci_pct)% CI)",
-        column_labels = ["h", "σ² Forecast", "Lower", "Upper"],
-        alignment = [:r, :r, :r, :r],
+        column_labels = ["h", "σ² Forecast", "Std. Err.", "Lower", "Upper"],
+        alignment = [:r, :r, :r, :r, :r],
     )
 end

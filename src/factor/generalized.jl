@@ -129,15 +129,17 @@ function Base.show(io::IO, m::GeneralizedDynamicFactorModel{T}) where {T}
         alignment = [:l, :r],
     )
     n_show = min(m.r, 5)
-    var_data = Matrix{Any}(undef, n_show, 2)
+    cum_var = cumsum(m.variance_explained)
+    var_data = Matrix{Any}(undef, n_show, 3)
     for i in 1:n_show
         var_data[i, 1] = "Factor $i"
         var_data[i, 2] = _fmt_pct(m.variance_explained[i])
+        var_data[i, 3] = _fmt_pct(cum_var[i])
     end
     _pretty_table(io, var_data;
         title = "Variance Explained",
-        column_labels = ["", "Variance"],
-        alignment = [:l, :r],
+        column_labels = ["", "Variance", "Cumulative"],
+        alignment = [:l, :r, :r],
     )
 end
 

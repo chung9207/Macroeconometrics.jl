@@ -277,7 +277,7 @@ export contribution, total_shock_contribution, verify_decomposition
 # Exports - Report, Tables, and Result Interface
 # =============================================================================
 
-export report
+export report, refs
 export table, print_table
 export point_estimate, has_uncertainty, uncertainty_bounds
 export set_display_backend, get_display_backend

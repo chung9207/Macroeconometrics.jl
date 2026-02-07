@@ -228,4 +228,76 @@ using Random
         end
         set_display_backend(:text)
     end
+
+    @testset "refs() bibliographic references" begin
+        Random.seed!(42)
+        model = estimate_var(randn(100, 2), 2)
+
+        # Text format
+        io = IOBuffer(); refs(io, model; format=:text)
+        s = String(take!(io))
+        @test occursin("Sims", s)
+        @test occursin("DOI:", s)
+
+        # BibTeX format
+        io = IOBuffer(); refs(io, model; format=:bibtex)
+        s = String(take!(io))
+        @test occursin("@article{sims1980", s)
+        @test occursin("@book{lutkepohl2005", s)
+
+        # LaTeX format
+        io = IOBuffer(); refs(io, model; format=:latex)
+        s = String(take!(io))
+        @test occursin("\\bibitem{sims1980}", s)
+
+        # HTML format
+        io = IOBuffer(); refs(io, model; format=:html)
+        s = String(take!(io))
+        @test occursin("<a href=", s)
+        @test occursin("<em>", s)
+
+        # Symbol dispatch
+        io = IOBuffer(); refs(io, :fastica; format=:text)
+        s = String(take!(io))
+        @test occursin("rinen", s)  # Hyvärinen
+
+        io = IOBuffer(); refs(io, :johansen; format=:text)
+        s = String(take!(io))
+        @test occursin("Johansen", s)
+
+        # Unit root test refs
+        y = cumsum(randn(200))
+        adf_r = adf_test(y)
+        io = IOBuffer(); refs(io, adf_r; format=:text)
+        s = String(take!(io))
+        @test occursin("Dickey", s)
+
+        # ARIMA refs
+        ar_m = estimate_ar(randn(100), 1)
+        io = IOBuffer(); refs(io, ar_m; format=:text)
+        s = String(take!(io))
+        @test occursin("Box", s)
+
+        # Volatility model refs
+        io = IOBuffer(); refs(io, :garch; format=:bibtex)
+        s = String(take!(io))
+        @test occursin("@article{bollerslev1986", s)
+
+        # ICA variant-dependent refs
+        var_m2 = estimate_var(randn(200, 2), 1)
+        ica_r2 = identify_fastica(var_m2)
+        io = IOBuffer(); refs(io, ica_r2; format=:text)
+        s = String(take!(io))
+        @test occursin("rinen", s)  # Hyvärinen from FastICA method-specific ref
+
+        # Unknown symbol throws
+        @test_throws ArgumentError refs(IOBuffer(), :nonexistent)
+
+        # Unknown format throws
+        @test_throws ArgumentError refs(IOBuffer(), model; format=:pdf)
+
+        # Convenience stdout form does not error
+        @test (redirect_stdout(devnull) do; refs(model); end; true)
+        @test (redirect_stdout(devnull) do; refs(:johansen); end; true)
+    end
 end

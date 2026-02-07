@@ -119,19 +119,22 @@ function Base.show(io::IO, m::GMMModel{T}) where {T}
     )
     # Coefficient table
     se = sqrt.(max.(diag(m.vcov), zero(T)))
-    coef_data = Matrix{Any}(undef, m.n_params, 4)
+    coef_data = Matrix{Any}(undef, m.n_params, 6)
     for i in 1:m.n_params
         t_stat = se[i] > 0 ? m.theta[i] / se[i] : T(NaN)
         pval = se[i] > 0 ? 2 * (1 - cdf(Normal(), abs(t_stat))) : T(NaN)
+        stars = isnan(pval) ? "" : _significance_stars(pval)
         coef_data[i, 1] = "θ[$i]"
         coef_data[i, 2] = _fmt(m.theta[i])
         coef_data[i, 3] = _fmt(se[i])
         coef_data[i, 4] = isnan(t_stat) ? "—" : string(_fmt(t_stat))
+        coef_data[i, 5] = isnan(pval) ? "—" : _format_pvalue(pval)
+        coef_data[i, 6] = stars
     end
     _pretty_table(io, coef_data;
         title = "Coefficients",
-        column_labels = ["", "Estimate", "Std. Error", "t-stat"],
-        alignment = [:l, :r, :r, :r],
+        column_labels = ["", "Estimate", "Std. Err.", "t", "P>|t|", ""],
+        alignment = [:l, :r, :r, :r, :r, :l],
     )
     # J-test
     if is_overidentified(m)

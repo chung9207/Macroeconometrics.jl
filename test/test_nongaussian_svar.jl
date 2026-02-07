@@ -229,7 +229,7 @@ using StatsAPI
 
             buf = IOBuffer()
             show(buf, result)
-            @test occursin("IdentifiabilityTest", String(take!(buf)))
+            @test occursin("Identifiability Test", String(take!(buf)))
         end
 
         @testset "Shock gaussianity - ML" begin

@@ -315,20 +315,12 @@ StatsAPI.islinear(::AbstractARIMAModel) = true
 function _show_arima_model(io::IO, header::String, m::AbstractARIMAModel;
                            phi::Vector=Float64[], theta::Vector=Float64[])
     # Parameters table
-    rows = Any[["Intercept", _fmt(m.c)]]
-    if !isempty(phi)
-        rows_str = join([string(_fmt(p)) for p in phi], ", ")
-        push!(rows, ["AR coefficients", rows_str])
-        for (i, p) in enumerate(phi)
-            push!(rows, ["  φ[$i]", _fmt(p)])
-        end
+    rows = Any[["Intercept (c)", _fmt(m.c)]]
+    for (i, p) in enumerate(phi)
+        push!(rows, ["φ[$i]", _fmt(p)])
     end
-    if !isempty(theta)
-        rows_str = join([string(_fmt(t)) for t in theta], ", ")
-        push!(rows, ["MA coefficients", rows_str])
-        for (i, t) in enumerate(theta)
-            push!(rows, ["  θ[$i]", _fmt(t)])
-        end
+    for (i, t) in enumerate(theta)
+        push!(rows, ["θ[$i]", _fmt(t)])
     end
     push!(rows, ["σ²", _fmt(m.sigma2)])
     data = reduce(vcat, permutedims.(rows))
@@ -339,12 +331,18 @@ function _show_arima_model(io::IO, header::String, m::AbstractARIMAModel;
     )
 
     # Fit statistics table
+    n_obs = length(m.y)
+    n_res = length(m.residuals)
+    r2_val = r2(m)
     fit_data = Any[
+        "Observations"   n_obs;
         "Log-likelihood" _fmt(m.loglik; digits=2);
         "AIC"            _fmt(m.aic; digits=2);
         "BIC"            _fmt(m.bic; digits=2);
+        "R²"             _fmt(r2_val);
+        "S.E. of regression" _fmt(sqrt(m.sigma2));
         "Method"         string(m.method);
-        "Converged"      string(m.converged)
+        "Converged"      m.converged ? "Yes" : "No"
     ]
     _pretty_table(io, fit_data;
         column_labels = ["Fit", "Value"],
@@ -362,23 +360,25 @@ function Base.show(io::IO, f::ARIMAForecast)
     ci_pct = round(Int, 100 * f.conf_level)
     n_show = min(10, h)
     nrows = h > n_show ? n_show + 1 : n_show
-    data = Matrix{Any}(undef, nrows, 4)
+    data = Matrix{Any}(undef, nrows, 5)
     for i in 1:n_show
         data[i, 1] = i
         data[i, 2] = _fmt(f.forecast[i])
-        data[i, 3] = _fmt(f.ci_lower[i])
-        data[i, 4] = _fmt(f.ci_upper[i])
+        data[i, 3] = _fmt(f.se[i])
+        data[i, 4] = _fmt(f.ci_lower[i])
+        data[i, 5] = _fmt(f.ci_upper[i])
     end
     if h > n_show
         data[nrows, 1] = "..."
         data[nrows, 2] = "($(h - n_show) more)"
         data[nrows, 3] = ""
         data[nrows, 4] = ""
+        data[nrows, 5] = ""
     end
     _pretty_table(io, data;
         title = "ARIMA Forecast (h=$h, $(ci_pct)% CI)",
-        column_labels = ["h", "Forecast", "Lower", "Upper"],
-        alignment = [:r, :r, :r, :r],
+        column_labels = ["h", "Forecast", "Std. Err.", "Lower", "Upper"],
+        alignment = [:r, :r, :r, :r, :r],
     )
 end
 

@@ -45,8 +45,14 @@ struct NormalityTestResult{T<:AbstractFloat} <: AbstractNormalityTest
 end
 
 function Base.show(io::IO, r::NormalityTestResult{T}) where {T}
+    stars = _significance_stars(r.pvalue)
+    reject_5 = r.pvalue < 0.05
+    conclusion = reject_5 ? "Reject H₀ (residuals are non-normal)" :
+                            "Fail to reject H₀ (no evidence against normality)"
     data = Any[
-        "Statistic"          _fmt(r.statistic);
+        "H₀"                "Residuals are multivariate normal";
+        "H₁"                "Residuals are non-normal";
+        "Test Statistic"     string(_fmt(r.statistic), " ", stars);
         "P-value"            _format_pvalue(r.pvalue);
         "Degrees of freedom" r.df;
         "Variables"          r.n_vars;
@@ -57,6 +63,8 @@ function Base.show(io::IO, r::NormalityTestResult{T}) where {T}
         column_labels = ["", ""],
         alignment = [:l, :r],
     )
+    conc_data = Any["Conclusion" conclusion; "Note" "*** p<0.01, ** p<0.05, * p<0.10"]
+    _pretty_table(io, conc_data; column_labels=["",""], alignment=[:l,:l])
 end
 
 # StatsAPI interface

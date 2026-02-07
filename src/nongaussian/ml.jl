@@ -57,17 +57,37 @@ end
 
 function Base.show(io::IO, r::NonGaussianMLResult{T}) where {T}
     n = size(r.B0, 1)
+    lr_stat = T(2) * (r.loglik - r.loglik_gaussian)
+    lr_stat = max(lr_stat, zero(T))
+    # Degrees of freedom: number of additional distribution parameters
+    n_dist_params = length(get(r.dist_params, :all_params, T[]))
+    lr_df = max(n_dist_params, 1)
+    lr_pval = lr_stat > 0 ? T(1) - cdf(Chisq(lr_df), lr_stat) : one(T)
+    lr_stars = _significance_stars(lr_pval)
+
     spec = Any[
-        "Distribution" string(r.distribution);
-        "Variables"    n;
+        "Distribution"   string(r.distribution);
+        "Variables"      n;
         "Log-likelihood" _fmt(r.loglik; digits=2);
-        "AIC"          _fmt(r.aic; digits=2);
-        "BIC"          _fmt(r.bic; digits=2);
-        "Converged"    r.converged ? "Yes" : "No";
-        "Iterations"   r.iterations
+        "Log-lik (Gaussian)" _fmt(r.loglik_gaussian; digits=2);
+        "AIC"            _fmt(r.aic; digits=2);
+        "BIC"            _fmt(r.bic; digits=2);
+        "Converged"      r.converged ? "Yes" : "No";
+        "Iterations"     r.iterations
     ]
     _pretty_table(io, spec;
         title = "Non-Gaussian ML Identification Result",
+        column_labels = ["", ""],
+        alignment = [:l, :r],
+    )
+    # LR test against Gaussian
+    lr_data = Any[
+        "LR statistic" string(_fmt(lr_stat; digits=2), " ", lr_stars);
+        "P-value"      _format_pvalue(lr_pval);
+        "H₀"           "Gaussian shocks (standard SVAR)"
+    ]
+    _pretty_table(io, lr_data;
+        title = "LR Test: Non-Gaussian vs. Gaussian",
         column_labels = ["", ""],
         alignment = [:l, :r],
     )

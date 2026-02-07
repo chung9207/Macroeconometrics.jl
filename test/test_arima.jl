@@ -846,7 +846,7 @@ end
     show(io, ma)
     output = String(take!(io))
     @test occursin("MA(1)", output)
-    @test occursin("MA coefficients", output)
+    @test occursin("θ[1]", output)
 
     # ARMA show
     arma = estimate_arma(y, 1, 1)
@@ -854,8 +854,8 @@ end
     show(io, arma)
     output = String(take!(io))
     @test occursin("ARMA(1,1)", output)
-    @test occursin("AR coefficients", output)
-    @test occursin("MA coefficients", output)
+    @test occursin("φ[1]", output)
+    @test occursin("θ[1]", output)
 
     # ARIMA show
     arima = estimate_arima(y_rw, 1, 1, 1)

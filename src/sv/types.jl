@@ -97,13 +97,15 @@ function Base.show(io::IO, m::SVModel{T}) where {T}
     )
 
     info_data = Any[
-        "Observations" string(nobs(m));
-        "Posterior samples" string(m.n_samples);
-        "Distribution" string(m.dist);
-        "Leverage" string(m.leverage)
+        "Observations"     nobs(m);
+        "Posterior samples" m.n_samples;
+        "Distribution"     string(m.dist);
+        "Leverage"         m.leverage ? "Yes" : "No";
+        "Persistence (φ̄)" _fmt(mean(m.phi_post));
+        "Unconditional σ²" _fmt(unconditional_variance(m))
     ]
     _pretty_table(io, info_data;
-        column_labels = ["Info", "Value"],
+        column_labels = ["Specification", ""],
         alignment = [:l, :r],
     )
 end
