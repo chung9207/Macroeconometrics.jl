@@ -665,6 +665,8 @@ StatsAPI.nobs(model::SmoothLPModel) = size(model.Y, 1)
 StatsAPI.islinear(::SmoothLPModel) = true
 
 # For StateLPModel
+StatsAPI.residuals(model::StateLPModel) = model.residuals
+StatsAPI.residuals(model::StateLPModel, h::Int) = model.residuals[h + 1]
 StatsAPI.nobs(model::StateLPModel) = size(model.Y, 1)
 StatsAPI.islinear(::StateLPModel) = true
 

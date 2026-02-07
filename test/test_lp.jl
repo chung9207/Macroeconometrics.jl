@@ -1203,4 +1203,137 @@ using Random
         v_end = MacroEconometricModels.bspline_basis_value(15.0, 6, degree, knots)
         @test isfinite(v_end)
     end
+
+    # ==========================================================================
+    # StatsAPI predict and residuals
+    # ==========================================================================
+
+    @testset "StatsAPI predict and residuals" begin
+        Random.seed!(99001)
+        T_pr = 200
+        n_pr = 2
+        Y_pr = zeros(T_pr, n_pr)
+        for t in 2:T_pr
+            Y_pr[t, :] = 0.5 * Y_pr[t-1, :] + randn(n_pr)
+        end
+        horizon = 5
+        lags = 2
+
+        # --- LPModel ---
+        @testset "LPModel predict" begin
+            model = estimate_lp(Y_pr, 1, horizon; lags=lags)
+
+            # Vector-of-matrices form
+            preds = predict(model)
+            @test length(preds) == horizon + 1
+
+            for h in 0:horizon
+                pred_h = predict(model, h)
+                res_h = residuals(model, h)
+                @test size(pred_h) == size(res_h)
+
+                # Residual identity: predict + residuals ≈ Y_h
+                T_obs = size(model.Y, 1)
+                t_end = T_obs - h
+                t_start = t_end - model.T_eff[h + 1] + 1
+                Y_h = MacroEconometricModels.build_response_matrix(
+                    model.Y, h, t_start, t_end, model.response_vars)
+                @test pred_h + res_h ≈ Y_h
+            end
+        end
+
+        # --- LPIVModel ---
+        @testset "LPIVModel predict" begin
+            Z = randn(T_pr, 1)
+            shock = 0.5 * Z[:, 1] + 0.5 * randn(T_pr)
+            Y_iv = zeros(T_pr, n_pr)
+            Y_iv[:, 1] = shock
+            for t in 2:T_pr
+                Y_iv[t, 2] = 0.3 * Y_iv[t-1, 2] + 0.5 * shock[t] + randn()
+            end
+            model = estimate_lp_iv(Y_iv, 1, Z, horizon; lags=lags)
+
+            preds = predict(model)
+            @test length(preds) == horizon + 1
+
+            # Per-horizon residuals dispatch
+            @test residuals(model, 0) == model.residuals[1]
+
+            for h in 0:horizon
+                pred_h = predict(model, h)
+                res_h = residuals(model, h)
+                T_obs = size(model.Y, 1)
+                t_end = T_obs - h
+                t_start = t_end - model.T_eff[h + 1] + 1
+                Y_h = MacroEconometricModels.build_response_matrix(
+                    model.Y, h, t_start, t_end, model.response_vars)
+                @test pred_h + res_h ≈ Y_h
+            end
+        end
+
+        # --- StateLPModel ---
+        @testset "StateLPModel predict" begin
+            state = randn(T_pr)
+            model = estimate_state_lp(Y_pr, 1, state, horizon; lags=lags, gamma=1.5)
+
+            # residuals dispatch
+            @test residuals(model) == model.residuals
+            @test residuals(model, 0) == model.residuals[1]
+
+            preds = predict(model)
+            @test length(preds) == horizon + 1
+
+            for h in 0:horizon
+                pred_h = predict(model, h)
+                res_h = residuals(model, h)
+                T_obs = size(model.Y, 1)
+                t_end = T_obs - h
+                t_start = t_end - model.T_eff[h + 1] + 1
+                Y_h = MacroEconometricModels.build_response_matrix(
+                    model.Y, h, t_start, t_end, model.response_vars)
+                @test pred_h + res_h ≈ Y_h
+            end
+        end
+
+        # --- PropensityLPModel ---
+        @testset "PropensityLPModel predict" begin
+            treatment = randn(T_pr) .> 0
+            covariates = randn(T_pr, 2)
+            model = estimate_propensity_lp(Y_pr, treatment, covariates, horizon; lags=lags)
+
+            # Per-horizon residuals dispatch
+            @test residuals(model, 0) == model.residuals[1]
+
+            preds = predict(model)
+            @test length(preds) == horizon + 1
+
+            for h in 0:horizon
+                pred_h = predict(model, h)
+                res_h = residuals(model, h)
+                T_obs = size(model.Y, 1)
+                t_end = T_obs - h
+                t_start = t_end - model.T_eff[h + 1] + 1
+                Y_h = MacroEconometricModels.build_response_matrix(
+                    model.Y, h, t_start, t_end, model.response_vars)
+                @test pred_h + res_h ≈ Y_h
+            end
+        end
+
+        # --- SmoothLPModel ---
+        @testset "SmoothLPModel predict" begin
+            model = estimate_smooth_lp(Y_pr, 1, horizon; degree=3, n_knots=4, lambda=1.0, lags=lags)
+
+            pred = predict(model)
+            res = residuals(model)
+            @test size(pred) == size(res)
+
+            # Pooled identity: predict + residuals ≈ Y_pooled
+            Y_pooled = vcat([begin
+                T_obs = size(model.Y, 1)
+                t_start, t_end = MacroEconometricModels.compute_horizon_bounds(T_obs, h, model.lags)
+                MacroEconometricModels.build_response_matrix(model.Y, h, t_start, t_end, model.response_vars)
+            end for h in 0:model.horizon]...)
+            @test pred + res ≈ Y_pooled
+        end
+    end
 end

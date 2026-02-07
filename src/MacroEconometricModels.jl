@@ -122,6 +122,23 @@ include("arima/estimation.jl")
 include("arima/forecast.jl")
 include("arima/selection.jl")
 
+# ARCH models
+include("arch/types.jl")
+include("arch/estimation.jl")
+include("arch/forecast.jl")
+include("arch/diagnostics.jl")
+
+# GARCH models
+include("garch/types.jl")
+include("garch/estimation.jl")
+include("garch/forecast.jl")
+include("garch/diagnostics.jl")
+
+# Stochastic Volatility models
+include("sv/types.jl")
+include("sv/estimation.jl")
+include("sv/forecast.jl")
+
 # Covariance estimators
 include("core/covariance.jl")
 
@@ -394,6 +411,30 @@ export identify_smooth_transition, identify_external_volatility
 export test_identification_strength, test_shock_gaussianity
 export test_gaussian_vs_nongaussian, test_shock_independence
 export test_overidentification
+
+# =============================================================================
+# Exports - Volatility Models (ARCH/GARCH/SV)
+# =============================================================================
+
+# Abstract type
+export AbstractVolatilityModel
+
+# ARCH types and estimation
+export ARCHModel, VolatilityForecast
+export estimate_arch
+export arch_lm_test, ljung_box_squared
+
+# GARCH types and estimation
+export GARCHModel, EGARCHModel, GJRGARCHModel
+export estimate_garch, estimate_egarch, estimate_gjr_garch
+export news_impact_curve
+
+# SV types and estimation
+export SVModel
+export estimate_sv
+
+# Type accessors
+export arch_order, garch_order, persistence, halflife, unconditional_variance
 
 # =============================================================================
 # Exports - StatsAPI Interface

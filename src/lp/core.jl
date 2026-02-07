@@ -508,3 +508,54 @@ function compare_var_lp(Y::AbstractMatrix{T}, horizon::Int; lags::Int=4) where {
 
     (var_irf=var_values, lp_irf=lp_values, difference=var_values - lp_values)
 end
+
+# =============================================================================
+# StatsAPI predict / residuals
+# =============================================================================
+
+"""
+    _lp_predict_at_horizon(Y, response_vars, residuals_h, T_eff_h, h)
+
+Reconstruct fitted values at horizon h via Y_h − residuals_h identity.
+"""
+function _lp_predict_at_horizon(Y::Matrix{T}, response_vars::Vector{Int},
+                                 residuals_h::Matrix{T}, T_eff_h::Int, h::Int) where {T}
+    T_obs = size(Y, 1)
+    t_end = T_obs - h
+    t_start = t_end - T_eff_h + 1
+    Y_h = build_response_matrix(Y, h, t_start, t_end, response_vars)
+    Y_h - residuals_h
+end
+
+# --- Per-horizon LP models (LPModel, LPIVModel, StateLPModel, PropensityLPModel) ---
+
+for LP in (:LPModel, :LPIVModel, :StateLPModel, :PropensityLPModel)
+    @eval begin
+        function StatsAPI.predict(model::$LP{T}, h::Int) where {T}
+            _lp_predict_at_horizon(model.Y, model.response_vars,
+                                   residuals(model, h), model.T_eff[h + 1], h)
+        end
+
+        function StatsAPI.predict(model::$LP{T}) where {T}
+            [predict(model, h) for h in 0:model.horizon]
+        end
+    end
+end
+
+# --- LPIVModel: add missing per-horizon residuals ---
+StatsAPI.residuals(model::LPIVModel, h::Int) = model.residuals[h + 1]
+
+# --- PropensityLPModel: add missing per-horizon residuals ---
+StatsAPI.residuals(model::PropensityLPModel, h::Int) = model.residuals[h + 1]
+
+# --- SmoothLPModel: pooled predict ---
+
+function StatsAPI.predict(model::SmoothLPModel{T}) where {T}
+    # Reconstruct pooled Y_h to match the stacked residuals
+    Y_pooled = vcat([begin
+        T_obs = size(model.Y, 1)
+        t_start, t_end = compute_horizon_bounds(T_obs, h, model.lags)
+        build_response_matrix(model.Y, h, t_start, t_end, model.response_vars)
+    end for h in 0:model.horizon]...)
+    Y_pooled - model.residuals
+end
