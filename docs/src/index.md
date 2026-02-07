@@ -9,6 +9,7 @@
 ### Key Features
 
 - **ARIMA Models**: AR, MA, ARMA, and ARIMA estimation via OLS, CSS, MLE (Kalman filter), and CSS-MLE; automatic order selection; multi-step forecasting with confidence intervals
+- **Time Series Filters**: Hodrick-Prescott (1997), Hamilton (2018), Beveridge-Nelson (1981), Baxter-King (1999) band-pass, and boosted HP (Phillips & Shi 2021) for trend-cycle decomposition
 - **Volatility Models**: ARCH (Engle 1982), GARCH (Bollerslev 1986), EGARCH (Nelson 1991), GJR-GARCH (Glosten et al. 1993) via MLE with two-stage optimization; Stochastic Volatility (Taylor 1986) via Kim-Shephard-Chib (1998) Gibbs sampler; news impact curves, ARCH-LM and Ljung-Box diagnostics, multi-step volatility forecasting with simulation-based CIs
 - **Vector Autoregression (VAR)**: OLS estimation with comprehensive diagnostics, impulse response functions (IRFs), and forecast error variance decomposition (FEVD)
 - **Vector Error Correction Models (VECM)**: Johansen MLE and Engle-Granger two-step estimation for cointegrated I(1) systems; automatic rank selection; IRF, FEVD, and historical decomposition via VAR conversion; VECM-specific forecasting preserving cointegrating relationships; VECM Granger causality tests
@@ -244,6 +245,7 @@ The package is organized into the following modules:
 |--------|-------------|
 | `core/` | Shared infrastructure: types, utilities, display backends, covariance estimators |
 | `arima/` | ARIMA suite: types, Kalman filter, estimation (CSS/MLE), forecasting, order selection |
+| `filters/` | Time series filters: HP, Hamilton, Beveridge-Nelson, Baxter-King, boosted HP |
 | `arch/` | ARCH(q) estimation via MLE, volatility forecasting |
 | `garch/` | GARCH, EGARCH, GJR-GARCH estimation via MLE, news impact curves, forecasting |
 | `sv/` | Stochastic Volatility via KSC (1998) Gibbs sampler, posterior predictive forecasts |
@@ -281,6 +283,14 @@ Throughout this documentation, we use the following notation conventions:
 - Box, George E. P., and Gwilym M. Jenkins. 1976. *Time Series Analysis: Forecasting and Control*. San Francisco: Holden-Day. ISBN 978-0-816-21104-3.
 - Brockwell, Peter J., and Richard A. Davis. 1991. *Time Series: Theory and Methods*. 2nd ed. New York: Springer. ISBN 978-1-4419-0319-8.
 - Harvey, Andrew C. 1993. *Time Series Models*. 2nd ed. Cambridge, MA: MIT Press. ISBN 978-0-262-08224-2.
+
+### Time Series Filters
+
+- Hodrick, Robert J., and Edward C. Prescott. 1997. "Postwar U.S. Business Cycles: An Empirical Investigation." *Journal of Money, Credit and Banking* 29 (1): 1--16. [https://doi.org/10.2307/2953682](https://doi.org/10.2307/2953682)
+- Hamilton, James D. 2018. "Why You Should Never Use the Hodrick-Prescott Filter." *Review of Economics and Statistics* 100 (5): 831--843. [https://doi.org/10.1162/rest_a_00706](https://doi.org/10.1162/rest_a_00706)
+- Beveridge, Stephen, and Charles R. Nelson. 1981. "A New Approach to Decomposition of Economic Time Series into Permanent and Transitory Components." *Journal of Monetary Economics* 7 (2): 151--174. [https://doi.org/10.1016/0304-3932(81)90040-4](https://doi.org/10.1016/0304-3932(81)90040-4)
+- Baxter, Marianne, and Robert G. King. 1999. "Measuring Business Cycles: Approximate Band-Pass Filters for Economic Time Series." *Review of Economics and Statistics* 81 (4): 575--593. [https://doi.org/10.1162/003465399558454](https://doi.org/10.1162/003465399558454)
+- Phillips, Peter C. B., and Zhentao Shi. 2021. "Boosting: Why You Can Use the HP Filter." *International Economic Review* 62 (2): 521--570. [https://doi.org/10.1111/iere.12495](https://doi.org/10.1111/iere.12495)
 
 ### Volatility Models
 

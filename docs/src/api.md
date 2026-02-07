@@ -22,6 +22,18 @@ The API documentation is organized into the following pages:
 | `auto_arima(y)` | Automatic ARIMA order selection |
 | `ic_table(y, max_p, max_q)` | Information criteria comparison table |
 
+### Time Series Filters
+
+| Function | Description |
+|----------|-------------|
+| `hp_filter(y; lambda=1600.0)` | Hodrick-Prescott trend-cycle decomposition |
+| `hamilton_filter(y; h=8, p=4)` | Hamilton (2018) regression filter |
+| `beveridge_nelson(y; p=:auto, q=:auto)` | Beveridge-Nelson permanent/transitory decomposition |
+| `baxter_king(y; pl=6, pu=32, K=12)` | Baxter-King band-pass filter |
+| `boosted_hp(y; stopping=:BIC, lambda=1600.0)` | Boosted HP filter (Phillips & Shi 2021) |
+| `trend(result)` | Extract trend component from filter result |
+| `cycle(result)` | Extract cyclical component from filter result |
+
 ### Multivariate Estimation Functions
 
 | Function | Description |

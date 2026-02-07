@@ -311,6 +311,45 @@ Print VECM Granger causality test results.
 """
 report(g::VECMGrangerResult) = show(stdout, g)
 
+# =============================================================================
+# report() - Time Series Filters
+# =============================================================================
+
+"""
+    report(r::HPFilterResult)
+
+Print HP filter summary.
+"""
+report(r::HPFilterResult) = show(stdout, r)
+
+"""
+    report(r::HamiltonFilterResult)
+
+Print Hamilton filter summary.
+"""
+report(r::HamiltonFilterResult) = show(stdout, r)
+
+"""
+    report(r::BeveridgeNelsonResult)
+
+Print Beveridge-Nelson decomposition summary.
+"""
+report(r::BeveridgeNelsonResult) = show(stdout, r)
+
+"""
+    report(r::BaxterKingResult)
+
+Print Baxter-King band-pass filter summary.
+"""
+report(r::BaxterKingResult) = show(stdout, r)
+
+"""
+    report(r::BoostedHPResult)
+
+Print boosted HP filter summary.
+"""
+report(r::BoostedHPResult) = show(stdout, r)
+
 """
     report(irf::ImpulseResponse)
     report(irf::BayesianImpulseResponse)
@@ -1808,6 +1847,37 @@ const _REFERENCES = Dict{Symbol, _RefEntry}(
         title="Prior Selection for Vector Autoregressions",
         journal="Review of Economics and Statistics", volume="97", issue="2", pages="436--451",
         doi="10.1162/REST_a_00483", isbn="", publisher="", entry_type=:article),
+    # --- Time Series Filters ---
+    :hodrick_prescott1997 => (key=:hodrick_prescott1997,
+        authors="Hodrick, Robert J. and Prescott, Edward C.", year=1997,
+        title="Postwar U.S. Business Cycles: An Empirical Investigation",
+        journal="Journal of Money, Credit and Banking", volume="29", issue="1", pages="1--16",
+        doi="10.2307/2953682", isbn="", publisher="", entry_type=:article),
+    :hamilton2018filter => (key=:hamilton2018filter,
+        authors="Hamilton, James D.", year=2018,
+        title="Why You Should Never Use the Hodrick-Prescott Filter",
+        journal="Review of Economics and Statistics", volume="100", issue="5", pages="831--843",
+        doi="10.1162/rest_a_00706", isbn="", publisher="", entry_type=:article),
+    :beveridge_nelson1981 => (key=:beveridge_nelson1981,
+        authors="Beveridge, Stephen and Nelson, Charles R.", year=1981,
+        title="A New Approach to Decomposition of Economic Time Series into Permanent and Transitory Components with Particular Attention to Measurement of the `Business Cycle'",
+        journal="Journal of Monetary Economics", volume="7", issue="2", pages="151--174",
+        doi="10.1016/0304-3932(81)90040-4", isbn="", publisher="", entry_type=:article),
+    :baxter_king1999 => (key=:baxter_king1999,
+        authors="Baxter, Marianne and King, Robert G.", year=1999,
+        title="Measuring Business Cycles: Approximate Band-Pass Filters for Economic Time Series",
+        journal="Review of Economics and Statistics", volume="81", issue="4", pages="575--593",
+        doi="10.1162/003465399558454", isbn="", publisher="", entry_type=:article),
+    :phillips_shi2021 => (key=:phillips_shi2021,
+        authors="Phillips, Peter C. B. and Shi, Zhentao", year=2021,
+        title="Boosting: Why You Can Use the HP Filter",
+        journal="International Economic Review", volume="62", issue="2", pages="521--570",
+        doi="10.1111/iere.12495", isbn="", publisher="", entry_type=:article),
+    :mei_phillips_shi2024 => (key=:mei_phillips_shi2024,
+        authors="Mei, Ziwei and Phillips, Peter C. B. and Shi, Zhentao", year=2024,
+        title="The boosted HP filter is more general than you might think",
+        journal="Journal of Applied Econometrics", volume="39", issue="7", pages="1260--1281",
+        doi="10.1002/jae.3086", isbn="", publisher="", entry_type=:article),
 )
 
 # --- Type/method → reference keys mapping ---
@@ -1925,6 +1995,17 @@ const _TYPE_REFS = Dict{Symbol, Vector{Symbol}}(
     :egarch => [:nelson1991],
     :gjr_garch => [:glosten_jagannathan_runkle1993],
     :sv => [:taylor1986, :kim_shephard_chib1998, :omori2007],
+    # Time Series Filters
+    :HPFilterResult => [:hodrick_prescott1997],
+    :HamiltonFilterResult => [:hamilton2018filter],
+    :BeveridgeNelsonResult => [:beveridge_nelson1981],
+    :BaxterKingResult => [:baxter_king1999],
+    :BoostedHPResult => [:phillips_shi2021, :mei_phillips_shi2024],
+    :hp_filter => [:hodrick_prescott1997],
+    :hamilton_filter => [:hamilton2018filter],
+    :beveridge_nelson => [:beveridge_nelson1981],
+    :baxter_king => [:baxter_king1999],
+    :boosted_hp => [:phillips_shi2021, :mei_phillips_shi2024],
 )
 
 # ICA method → additional ref keys (appended to ICASVARResult base refs)
@@ -2197,6 +2278,13 @@ refs(io::IO, ::ExternalVolatilitySVARResult; kw...) = refs(io, _TYPE_REFS[:Exter
 
 # Identifiability test result
 refs(io::IO, ::IdentifiabilityTestResult; kw...) = refs(io, [:lanne_meitz_saikkonen2017]; kw...)
+
+# Time series filters
+refs(io::IO, ::HPFilterResult; kw...) = refs(io, _TYPE_REFS[:HPFilterResult]; kw...)
+refs(io::IO, ::HamiltonFilterResult; kw...) = refs(io, _TYPE_REFS[:HamiltonFilterResult]; kw...)
+refs(io::IO, ::BeveridgeNelsonResult; kw...) = refs(io, _TYPE_REFS[:BeveridgeNelsonResult]; kw...)
+refs(io::IO, ::BaxterKingResult; kw...) = refs(io, _TYPE_REFS[:BaxterKingResult]; kw...)
+refs(io::IO, ::BoostedHPResult; kw...) = refs(io, _TYPE_REFS[:BoostedHPResult]; kw...)
 
 # --- Convenience: stdout fallback ---
 refs(x; kw...) = refs(stdout, x; kw...)

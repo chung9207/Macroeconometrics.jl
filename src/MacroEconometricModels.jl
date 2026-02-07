@@ -60,6 +60,7 @@ using StatsAPI
 using StatsAPI: fit, coef, vcov, residuals, predict, r2, aic, bic, dof, dof_residual, nobs, loglikelihood, confint, stderror, islinear
 using Distributions
 using FFTW
+using SparseArrays
 import Optim
 
 # =============================================================================
@@ -127,6 +128,14 @@ include("arima/kalman.jl")
 include("arima/estimation.jl")
 include("arima/forecast.jl")
 include("arima/selection.jl")
+
+# Time Series Filters (after ARIMA for beveridge_nelson, after teststat for boosted_hp ADF)
+include("filters/types.jl")
+include("filters/hp.jl")
+include("filters/hamilton.jl")
+include("filters/beveridge_nelson.jl")
+include("filters/baxter_king.jl")
+include("filters/boosted_hp.jl")
 
 # ARCH models
 include("arch/types.jl")
@@ -456,6 +465,23 @@ export estimate_sv
 
 # Type accessors
 export arch_order, garch_order, persistence, halflife, unconditional_variance
+
+# =============================================================================
+# Exports - Time Series Filters
+# =============================================================================
+
+# Abstract type
+export AbstractFilterResult
+
+# Result types
+export HPFilterResult, HamiltonFilterResult, BeveridgeNelsonResult
+export BaxterKingResult, BoostedHPResult
+
+# Filter functions
+export hp_filter, hamilton_filter, beveridge_nelson, baxter_king, boosted_hp
+
+# Accessors
+export trend, cycle
 
 # =============================================================================
 # Exports - StatsAPI Interface

@@ -13,7 +13,7 @@ makedocs(;
         canonical="https://chung9207.github.io/MacroEconometricModels.jl",
         edit_link="main",
         assets=String[],
-        size_threshold=350 * 1024,
+        size_threshold=400 * 1024,
         mathengine=Documenter.MathJax3(),
         repolink="https://github.com/chung9207/MacroEconometricModels.jl",
     ),
@@ -21,6 +21,7 @@ makedocs(;
         "Home" => "index.md",
         "Univariate Models" => [
             "ARIMA" => "arima.md",
+            "Time Series Filters" => "filters.md",
             "Volatility Models" => "volatility.md",
         ],
         "Frequentist Models" => [

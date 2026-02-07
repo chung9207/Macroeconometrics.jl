@@ -40,7 +40,7 @@ const TEST_GROUPS = [
         "lp/test_lp_forecast.jl",
         "lp/test_lp_fevd.jl",
     ]),
-    # Group 5: ARIMA + Unit Root + GMM + Utilities
+    # Group 5: ARIMA + Unit Root + GMM + Utilities + Filters
     ("ARIMA & Utilities" => [
         "teststat/test_unitroot.jl",
         "arima/test_arima.jl",
@@ -50,6 +50,7 @@ const TEST_GROUPS = [
         "core/test_examples.jl",
         "gmm/test_gmm.jl",
         "core/test_covariance.jl",
+        "filters/test_filters.jl",
     ]),
     # Group 6: Non-Gaussian + Display + Misc
     ("Non-Gaussian & Display" => [
@@ -266,6 +267,10 @@ else
 
         @testset "VECM" begin
             include("vecm/test_vecm.jl")
+        end
+
+        @testset "Time Series Filters" begin
+            include("filters/test_filters.jl")
         end
     end
 end

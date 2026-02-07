@@ -57,6 +57,9 @@ abstract type AbstractNonGaussianSVAR end
 """Abstract supertype for univariate volatility models (ARCH/GARCH/SV)."""
 abstract type AbstractVolatilityModel <: StatsAPI.RegressionModel end
 
+"""Abstract supertype for trend-cycle decomposition filter results."""
+abstract type AbstractFilterResult end
+
 # =============================================================================
 # Abstract Types - Analysis Result Types
 # =============================================================================

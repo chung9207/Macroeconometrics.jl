@@ -10,6 +10,19 @@ MacroEconometricModels.MacroEconometricModels
 
 ---
 
+## Time Series Filters
+
+```@docs
+AbstractFilterResult
+HPFilterResult
+HamiltonFilterResult
+BeveridgeNelsonResult
+BaxterKingResult
+BoostedHPResult
+```
+
+---
+
 ## ARIMA Models
 
 ```@docs

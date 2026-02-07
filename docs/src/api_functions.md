@@ -4,6 +4,20 @@ This page documents all functions in **MacroEconometricModels.jl**, organized by
 
 ---
 
+## Time Series Filters
+
+```@docs
+hp_filter
+hamilton_filter
+beveridge_nelson
+baxter_king
+boosted_hp
+trend
+cycle
+```
+
+---
+
 ## ARIMA Models
 
 ### Estimation
